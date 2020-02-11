@@ -16,7 +16,11 @@ type Info struct {
 	Request   HTTP
 }
 
-// Parse reads a log string and returns a properly hydrated Info struct
-func Parse(line string) (Info, error) {
-	return Info{}, nil
+// HTTP describes an HTTP-request-log
+type HTTP struct {
+	Method  string
+	Route   string
+	Code    uint32
+	Size    uint64
+	Version string
 }
