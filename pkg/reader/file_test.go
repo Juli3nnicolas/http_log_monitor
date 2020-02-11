@@ -12,7 +12,7 @@ import (
 
 func TestOpenDoesntReturnErrorOnExistingFile(t *testing.T) {
 	r := File{}
-	err := r.Open("./data.test")
+	err := r.Open("./file_test.log")
 	defer r.Close()
 	assert.Nil(t, err)
 }
@@ -42,7 +42,7 @@ func TestOpenReturnsErrorIfNotExactlyOneStringParameterIsPassed(t *testing.T) {
 func TestCloseProperlyResetPointers(t *testing.T) {
 	// Setup
 	r := File{}
-	err := r.Open("./data.test")
+	err := r.Open("./file_test.log")
 	defer r.Close()
 	assert.Nil(t, err)
 	assert.NotNil(t, r.file)
@@ -58,7 +58,7 @@ func TestCloseProperlyResetPointers(t *testing.T) {
 
 func TestCloseCanBecalledSeveralTimesInARowWithoutPanicking(t *testing.T) {
 	r := File{}
-	err := r.Open("./data.test")
+	err := r.Open("./file_test.log")
 	defer r.Close()
 	assert.Nil(t, err)
 
@@ -76,7 +76,7 @@ func TestReadOutputAllLines(t *testing.T) {
 	}
 
 	// Read the file using the std library to compare
-	f, err := os.Open("./data.test")
+	f, err := os.Open("./file_test.log")
 	if err != nil {
 		panic(err)
 	}
@@ -95,7 +95,7 @@ func TestReadOutputAllLines(t *testing.T) {
 	}
 
 	// Exercise
-	err = r.Open("./data.test")
+	err = r.Open("./file_test.log")
 	defer r.Close()
 	assert.Nil(t, err)
 
