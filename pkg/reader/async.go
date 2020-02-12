@@ -28,7 +28,7 @@ func (r *Async) init() {
 // Open inits the sync reader and opens Reader.
 func (r *Async) Open(args ...interface{}) error {
 	r.init()
-	return r.Reader.Open(args)
+	return r.Reader.Open(args...)
 }
 
 // Close stops reading data and closes Reader.
@@ -56,10 +56,10 @@ func (r *Async) Stop() {
 	r.stop <- true
 }
 
-// Flush stops the async reader from reading data. Then it flushes all its internal buffers.
+// Flush empties all internal buffers. Make sure to call Stop before otherwise
+// the read function may crash.
 // If Reader implements a similar method, it must be called manually.
 func (r *Async) Flush() {
-	r.Stop()
 	r.init()
 }
 

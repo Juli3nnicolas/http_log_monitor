@@ -29,7 +29,7 @@ func CommonLogFormatParser(data []byte) (log.Info, error) {
 // Open opens a file in read mode
 func (r *File) Open(path ...interface{}) error {
 	if len(path) != 1 {
-		return fmt.Errorf("too many arguments")
+		return fmt.Errorf("wrong argument number")
 	}
 
 	p, ok := path[0].(string)
