@@ -21,8 +21,12 @@ type File struct {
 // to code dedicated marshalers/unmarshalers
 type Parser func(data []byte) (log.Info, error)
 
-// CommonLogFormatParser is the default parser reads W3C httpd logs by default
-func CommonLogFormatParser(data []byte) (log.Info, error) {
+// CommonLogFormatParser is the default parser. It reads W3C httpd logs by default
+func CommonLogFormatParser() Parser {
+	return commonLogFormatParser
+}
+
+func commonLogFormatParser(data []byte) (log.Info, error) {
 	return log.Parse(string(data))
 }
 
@@ -46,7 +50,7 @@ func (r *File) Open(path ...interface{}) error {
 	r.scanner = bufio.NewScanner(r.file)
 
 	if r.Parse == nil {
-		r.Parse = CommonLogFormatParser
+		r.Parse = CommonLogFormatParser()
 	}
 
 	return nil
