@@ -1,4 +1,4 @@
-package logmonitor
+package config
 
 const (
 	// DefaultAppErrorLogFile is the path to the app's error log file
