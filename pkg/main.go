@@ -28,6 +28,12 @@ func main() {
 		panic(err)
 	}
 
+	countCodes := task.CountErrorCodes{}
+	err = countCodes.Init()
+	if err != nil {
+		panic(err)
+	}
+
 	const frame time.Duration = 1 * time.Second
 	start := time.Now()
 
@@ -43,6 +49,11 @@ func main() {
 		}
 
 		err = rates.BeforeRun()
+		if err != nil {
+			panic(err)
+		}
+
+		err = countCodes.BeforeRun()
 		if err != nil {
 			panic(err)
 		}
@@ -68,6 +79,13 @@ func main() {
 				}
 				fmt.Println("Rates ", rates.Result())
 			}
+
+			if !countCodes.IsDone() {
+				if err = countCodes.Run(logs); err != nil {
+					panic(err)
+				}
+				fmt.Println("Rates ", countCodes.Result())
+			}
 		}
 
 		start = time.Now()
@@ -85,6 +103,11 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
+
+		err = countCodes.AfterRun()
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	err = fetchLogs.Close()
@@ -98,6 +121,11 @@ func main() {
 	}
 
 	err = rates.Close()
+	if err != nil {
+		panic(err)
+	}
+
+	err = countCodes.Close()
 	if err != nil {
 		panic(err)
 	}
