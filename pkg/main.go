@@ -16,6 +16,12 @@ func main() {
 		panic(err)
 	}
 
+	mostHits := task.FindMostHitSections{}
+	err = mostHits.Init()
+	if err != nil {
+		panic(err)
+	}
+
 	const frame time.Duration = 1 * time.Second
 	start := time.Now()
 
@@ -25,18 +31,45 @@ func main() {
 			panic(err)
 		}
 
+		err = mostHits.BeforeRun()
+		if err != nil {
+			panic(err)
+		}
+
 		for time.Now().Sub(start) < frame {
 			if !fetchLogs.IsDone() {
-				fetchLogs.Run()
-				fmt.Println(fetchLogs.Fetch())
+				if err = fetchLogs.Run(); err != nil {
+					panic(err)
+				}
+			}
+			logs := fetchLogs.Fetch()
+
+			if !mostHits.IsDone() {
+				if err = mostHits.Run(logs); err != nil {
+					panic(err)
+				}
+				fmt.Println("Most hits ", mostHits.Result())
 			}
 		}
 
 		start = time.Now()
 		err = fetchLogs.AfterRun()
+		if err != nil {
+			panic(err)
+		}
+
+		err = mostHits.AfterRun()
+		if err != nil {
+			return
+		}
 	}
 
 	err = fetchLogs.Close()
+	if err != nil {
+		panic(err)
+	}
+
+	err = mostHits.Close()
 	if err != nil {
 		panic(err)
 	}
