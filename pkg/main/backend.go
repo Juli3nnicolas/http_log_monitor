@@ -4,12 +4,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Juli3nnicolas/http_log_monitor/pkg/task"
-
 	"github.com/Juli3nnicolas/http_log_monitor/pkg/reader"
+	"github.com/Juli3nnicolas/http_log_monitor/pkg/task"
 )
 
-func main() {
+func backend() {
 	fetchLogs := task.FetchLogs{}
 	err := fetchLogs.Init("/tmp/access.log", reader.CommonLogFormatParser())
 	if err != nil {
