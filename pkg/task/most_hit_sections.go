@@ -7,25 +7,44 @@ import (
 	"github.com/Juli3nnicolas/http_log_monitor/pkg/log"
 )
 
-// FindMostHitSections asynchronously reads a log-file and gets its content.
+// FindMostHitSections reads the logs and agregate them by sections. A log occurence is called a hit.
+// This task returns information on hits (how many times they were found, how were they called...).
 type FindMostHitSections struct {
-	sectionsCount map[string]uint64
-	done          bool
+	sectionHits map[string]Hit
+	done        bool
 }
 
-// Init sets up the async loader for reading the log file
+// Hit is a structure representing a request occurence in the log file.
+type Hit struct {
+	Total   uint64
+	Methods map[string]uint64
+}
+
+// set is used to properly fill a Hit. It requires a url section and an HTTP method
+func (o *Hit) set(section, method string) {
+	if o.Methods == nil {
+		o.Methods = make(map[string]uint64)
+	}
+	o.Total++
+	o.Methods[method]++
+}
+
+// Init does nothing, implemented to comply with the task interface.
 func (o *FindMostHitSections) Init(args ...interface{}) error {
 	return nil
 }
 
-// BeforeRun Starts the reading process. Just internally fetch data.
+// BeforeRun sets the task as not done. IsDone is going to return to false.
 func (o *FindMostHitSections) BeforeRun() error {
 	o.done = false
 
 	return nil
 }
 
-// Run copies the files content to its internal buffer for sharing with other
+// Run parses a []log.Info and aggregates its content by sections.
+// Then every occurence's data is accounted for so that the summary
+// can returned by Result.
+// IMPORTAN : this method expects a []log.Info input to function
 func (o *FindMostHitSections) Run(args ...interface{}) error {
 	if len(args) != 1 {
 		return fmt.Errorf("wrong parameters - only one parameter is supported, it must be a []log.Info")
@@ -37,29 +56,32 @@ func (o *FindMostHitSections) Run(args ...interface{}) error {
 	}
 
 	logsLen := len(logs)
-	o.sectionsCount = make(map[string]uint64, logsLen)
+	o.sectionHits = make(map[string]Hit, logsLen)
 
 	for i := 0; i < logsLen; i++ {
-		s := extractSection(logs[i].Request.Route)
-		if s != "" {
-			o.sectionsCount[s]++
+		section := extractSection(logs[i].Request.Route)
+		if section != "" {
+			hit := o.sectionHits[section]
+			hit.set(section, logs[i].Request.Method)
+			o.sectionHits[section] = hit
 		}
 	}
+
 	o.done = true
 
 	return nil
 }
 
-// Result returns the result of the work carried out by the task
-func (o *FindMostHitSections) Result() map[string]uint64 {
+// Result returns the result of the work carried out by the task if the task is done. Returns nil otherwise.
+func (o *FindMostHitSections) Result() map[string]Hit {
 	if o.IsDone() {
-		return o.sectionsCount
+		return o.sectionHits
 	}
 
 	return nil
 }
 
-// AfterRun ceases reading and prepares a new buffer for reading data during
+// AfterRun does nothing, must be implemented to implement to task interface
 func (o *FindMostHitSections) AfterRun() error {
 	return nil
 }
