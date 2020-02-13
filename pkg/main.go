@@ -22,6 +22,12 @@ func main() {
 		panic(err)
 	}
 
+	rates := task.MeasureRates{}
+	err = rates.Init()
+	if err != nil {
+		panic(err)
+	}
+
 	const frame time.Duration = 1 * time.Second
 	start := time.Now()
 
@@ -32,6 +38,11 @@ func main() {
 		}
 
 		err = mostHits.BeforeRun()
+		if err != nil {
+			panic(err)
+		}
+
+		err = rates.BeforeRun()
 		if err != nil {
 			panic(err)
 		}
@@ -50,6 +61,13 @@ func main() {
 				}
 				fmt.Println("Most hits ", mostHits.Result())
 			}
+
+			if !rates.IsDone() {
+				if err = rates.Run(logs, uint64(frame.Seconds())); err != nil {
+					panic(err)
+				}
+				fmt.Println("Rates ", rates.Result())
+			}
 		}
 
 		start = time.Now()
@@ -60,7 +78,12 @@ func main() {
 
 		err = mostHits.AfterRun()
 		if err != nil {
-			return
+			panic(err)
+		}
+
+		err = rates.AfterRun()
+		if err != nil {
+			panic(err)
 		}
 	}
 
@@ -70,6 +93,11 @@ func main() {
 	}
 
 	err = mostHits.Close()
+	if err != nil {
+		panic(err)
+	}
+
+	err = rates.Close()
 	if err != nil {
 		panic(err)
 	}
