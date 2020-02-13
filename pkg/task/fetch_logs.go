@@ -27,7 +27,7 @@ func (o *FetchLogs) Init(args ...interface{}) error {
 }
 
 // BeforeRun Starts the reading process. Just internally fetch data.
-func (o *FetchLogs) BeforeRun() error {
+func (o *FetchLogs) BeforeRun(args ...interface{}) error {
 	o.done = false
 	err := o.dbuf.Run()
 	return err

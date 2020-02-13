@@ -8,7 +8,7 @@ type Task interface {
 	// a task can be executed several times, accross several time frames.
 	// This function and AfterRun is there to setup/cleanup the task's state
 	// in case a long iterative work is planned
-	BeforeRun() error
+	BeforeRun(args ...interface{}) error
 	// Run executes the task
 	Run() error
 	// AfterRun like BeforeRun except it is called after Run has been executed
