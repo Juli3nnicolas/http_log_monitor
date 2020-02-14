@@ -7,6 +7,7 @@ import (
 )
 
 // CountErrorCodes is a task that counts all different error codes present in a []log.Info
+// TODO: rename this task, the name is not accurate
 type CountErrorCodes struct {
 	done  bool
 	codes map[uint32]uint64

@@ -1,19 +1,14 @@
-// Exits when 'escape' is pressed.
-package main
+package app
 
 import (
 	"context"
 	"math/rand"
 	"time"
 
-	"github.com/mum4k/termdash"
 	"github.com/mum4k/termdash/cell"
 	"github.com/mum4k/termdash/container"
 	"github.com/mum4k/termdash/container/grid"
-	"github.com/mum4k/termdash/keyboard"
 	"github.com/mum4k/termdash/linestyle"
-	"github.com/mum4k/termdash/terminal/termbox"
-	"github.com/mum4k/termdash/terminal/terminalapi"
 	"github.com/mum4k/termdash/widgets/barchart"
 	"github.com/mum4k/termdash/widgets/text"
 	"github.com/mum4k/termdash/widgets/textinput"
@@ -153,46 +148,6 @@ func gridLayout(w *widgets) ([]container.Option, error) {
 		return nil, err
 	}
 	return gridOpts, nil
-}
-
-// rootID is the ID assigned to the root container.
-const rootID = "root"
-
-func main() {
-	t, err := termbox.New(termbox.ColorMode(terminalapi.ColorMode256))
-	if err != nil {
-		panic(err)
-	}
-	defer t.Close()
-
-	c, err := container.New(t, container.ID(rootID))
-	if err != nil {
-		panic(err)
-	}
-
-	ctx, cancel := context.WithCancel(context.Background())
-	w, err := newWidgets(ctx, c)
-	if err != nil {
-		panic(err)
-	}
-
-	gridOpts, err := gridLayout(w)
-	if err != nil {
-		panic(err)
-	}
-
-	if err := c.Update(rootID, gridOpts...); err != nil {
-		panic(err)
-	}
-
-	quitter := func(k *terminalapi.Keyboard) {
-		if k.Key == keyboard.KeyEsc || k.Key == keyboard.KeyCtrlC {
-			cancel()
-		}
-	}
-	if err := termdash.Run(ctx, t, c, termdash.KeyboardSubscriber(quitter), termdash.RedrawInterval(redrawInterval)); err != nil {
-		panic(err)
-	}
 }
 
 // periodic executes the provided closure periodically every interval.

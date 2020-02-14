@@ -27,6 +27,7 @@ type GlobalRates struct {
 
 // FrameRates measures related to the current time-frame
 type FrameRates struct {
+	Duration   uint64 // frame's duration expressed in seconds
 	ReqPerS    uint64
 	NbRequests uint64
 	NbSuccess  uint64
@@ -77,6 +78,7 @@ func (o *MeasureRates) computeFrameRates(logs []log.Info, frame uint64) {
 	// All log lines always correspond to HTTP requests
 	f.NbRequests = uint64(losgLen)
 	f.ReqPerS = f.NbRequests / frame
+	f.Duration = frame
 
 	var nbSuccess uint64
 	for i := 0; i < losgLen; i++ {
