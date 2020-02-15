@@ -277,7 +277,7 @@ func newBarChart(ctx context.Context) (*barchart.BarChart, error) {
 // SegmentDisplay.
 func newTextInput(text, inputPlaceHolder string, onSubmit func(input string) error) (*textinput.TextInput, error) {
 	input, err := textinput.New(
-		textinput.Label(text, cell.FgColor(cell.ColorBlue)),
+		textinput.Label(text, cell.FgColor(cell.ColorWhite)),
 		textinput.MaxWidthCells(20),
 		textinput.PlaceHolder(inputPlaceHolder),
 		textinput.OnSubmit(onSubmit),
@@ -291,7 +291,7 @@ func newTextInput(text, inputPlaceHolder string, onSubmit func(input string) err
 // Adds a label (raw text)
 func newTextLabel(msg string) (*text.Text, error) {
 	txt, err := text.New()
-	txt.Write(msg, text.WriteCellOpts(cell.FgColor(cell.ColorBlue)))
+	txt.Write(msg, text.WriteCellOpts(cell.FgColor(cell.ColorWhite)))
 	if err != nil {
 		return nil, err
 	}
