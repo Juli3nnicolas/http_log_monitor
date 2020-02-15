@@ -19,7 +19,6 @@ const redrawInterval = 250 * time.Millisecond
 
 // widgets holds the widgets used by this demo.
 type widgets struct {
-	logFilePath    *text.Text
 	alertThreshold *textinput.TextInput
 	alertDuration  *textinput.TextInput
 	alertMessage   *text.Text
@@ -36,11 +35,6 @@ type widgets struct {
 // newWidgets creates all widgets used by this demo.
 func newWidgets(ctx context.Context, c *container.Container) (*widgets, error) {
 	bc, err := newBarChart(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	logFilePath, err := newTextLabel("Reading /tmp/access.log")
 	if err != nil {
 		return nil, err
 	}
@@ -96,7 +90,6 @@ func newWidgets(ctx context.Context, c *container.Container) (*widgets, error) {
 	}
 
 	return &widgets{
-		logFilePath:    logFilePath,
 		alertThreshold: alertThreshold,
 		alertDuration:  alertDuration,
 		alertMessage:   alertMessage,
@@ -118,11 +111,6 @@ func newWidgets(ctx context.Context, c *container.Container) (*widgets, error) {
 func gridLayout(w *widgets) ([]container.Option, error) {
 	builder := grid.New()
 	builder.Add(
-		grid.RowHeightPerc(5,
-			grid.Widget(w.logFilePath,
-				container.Border(linestyle.None),
-			),
-		),
 		grid.RowHeightPercWithOpts(10,
 			[]container.Option{
 				container.Border(linestyle.Light),
@@ -147,7 +135,7 @@ func gridLayout(w *widgets) ([]container.Option, error) {
 				),
 			),
 		),
-		grid.RowHeightPerc(85,
+		grid.RowHeightPerc(90,
 			grid.ColWidthPerc(70,
 				grid.RowHeightPerc(10,
 					grid.Widget(w.ratesMsg,
