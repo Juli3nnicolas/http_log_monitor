@@ -141,6 +141,20 @@ func updateRates(w *widgets, r *task.Rates) error {
 }
 
 func updateReqPerSeconds(w *widgets, lastReqPerSec [5]uint64) error {
+	/*
+		const (
+			bars = 6
+			max  = 100
+		)
+		values := make([]int, bars)
+		go periodic(ctx, 1*time.Second, func() error {
+			for i := range values {
+				values[i] = int(rand.Int31n(max + 1))
+			}
+
+			return bc.Values(values, max)
+		})
+	*/
 	return nil
 }
 
