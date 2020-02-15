@@ -168,7 +168,12 @@ func gridLayout(w *widgets) ([]container.Option, error) {
 					),
 				),
 				// HTTP error codes - add a container
-				grid.RowHeightPerc(50,
+				grid.RowHeightPercWithOpts(50,
+					[]container.Option{
+						container.Border(linestyle.Light),
+						container.BorderTitle("HTTP codes"),
+						container.BorderTitleAlignLeft(),
+					},
 					grid.ColWidthPerc(20,
 						grid.Widget(w.httpCodes100,
 							container.Border(linestyle.None),
