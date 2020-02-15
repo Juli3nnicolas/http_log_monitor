@@ -159,7 +159,53 @@ func updateReqPerSeconds(w *widgets, lastReqPerSec [5]uint64) error {
 }
 
 func updateCodes(w *widgets, codes map[uint32]uint64) error {
-	return nil
+	var (
+		msg100 string = "100:\n"
+		msg200 string = "200:\n"
+		msg300 string = "300:\n"
+		msg400 string = "400:\n"
+		msg500 string = "500:\n"
+	)
+
+	for code, count := range codes {
+		switch {
+		case code < 200:
+			msg100 += httpReturnCodeLine(code, count)
+
+		case code < 300:
+			msg200 += httpReturnCodeLine(code, count)
+
+		case code < 400:
+			msg300 += httpReturnCodeLine(code, count)
+
+		case code < 500:
+			msg400 += httpReturnCodeLine(code, count)
+
+		case code < 600:
+			msg500 += httpReturnCodeLine(code, count)
+
+		default:
+			msg500 += ""
+		}
+	}
+
+	if err := updateTextWidget(w.httpCodes100, msg100); err != nil {
+		return err
+	}
+	if err := updateTextWidget(w.httpCodes200, msg200); err != nil {
+		return err
+	}
+	if err := updateTextWidget(w.httpCodes300, msg300); err != nil {
+		return err
+	}
+	if err := updateTextWidget(w.httpCodes400, msg400); err != nil {
+		return err
+	}
+	return updateTextWidget(w.httpCodes500, msg500)
+}
+
+func httpReturnCodeLine(code uint32, count uint64) string {
+	return fmt.Sprintf("%d: %d\n", code, count)
 }
 
 func updateTextWidget(w *text.Text, msg string) error {
