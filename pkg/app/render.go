@@ -93,7 +93,7 @@ func (r *renderer) update(viewChan chan ViewFrame, errorHandle func(error)) {
 		errorHandle(fmt.Errorf("nil widget ptr"))
 	}
 
-	var lastReqPerSec [5]uint64
+	updateReqPerSeconds := createUpdateReqPerSeconds()
 	for {
 		view := <-viewChan
 
@@ -105,7 +105,7 @@ func (r *renderer) update(viewChan chan ViewFrame, errorHandle func(error)) {
 			errorHandle(err)
 		}
 
-		if err := updateReqPerSeconds(w, lastReqPerSec); err != nil {
+		if err := updateReqPerSeconds(w, &view.Rates); err != nil {
 			errorHandle(err)
 		}
 
@@ -140,22 +140,20 @@ func updateRates(w *widgets, r *task.Rates) error {
 	return updateTextWidget(w.ratesMsg, msg)
 }
 
-func updateReqPerSeconds(w *widgets, lastReqPerSec [5]uint64) error {
-	/*
-		const (
-			bars = 6
-			max  = 100
-		)
-		values := make([]int, bars)
-		go periodic(ctx, 1*time.Second, func() error {
-			for i := range values {
-				values[i] = int(rand.Int31n(max + 1))
-			}
+func createUpdateReqPerSeconds() func(w *widgets, r *task.Rates) error {
+	lastreq := make([]int, 5)
+	update := func(w *widgets, r *task.Rates) error {
+		lenLastReqs := len(lastreq)
 
-			return bc.Values(values, max)
-		})
-	*/
-	return nil
+		reqs := make([]int, lenLastReqs)
+		copy(reqs[1:], lastreq[:lenLastReqs-1])
+		reqs[0] = int(r.Frame.ReqPerS)
+
+		lastreq = reqs
+		return w.reqPerSec.Values(lastreq[:], int(r.Global.MaxReqPerS))
+	}
+
+	return update
 }
 
 func updateCodes(w *widgets, codes map[uint32]uint64) error {

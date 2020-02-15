@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"math/rand"
 	"time"
 
 	"github.com/mum4k/termdash/cell"
@@ -29,12 +28,12 @@ type widgets struct {
 	httpCodes300   *text.Text
 	httpCodes400   *text.Text
 	httpCodes500   *text.Text
-	barChart       *barchart.BarChart
+	reqPerSec      *barchart.BarChart
 }
 
 // newWidgets creates all widgets used by this demo.
 func newWidgets(ctx context.Context, c *container.Container) (*widgets, error) {
-	bc, err := newBarChart(ctx)
+	reqPerSec, err := newBarChart(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +99,7 @@ func newWidgets(ctx context.Context, c *container.Container) (*widgets, error) {
 		httpCodes300:   httpCodes300,
 		httpCodes400:   httpCodes400,
 		httpCodes500:   httpCodes500,
-		barChart:       bc,
+		reqPerSec:      reqPerSec,
 	}, nil
 }
 
@@ -145,7 +144,7 @@ func gridLayout(w *widgets) ([]container.Option, error) {
 					),
 				),
 				grid.RowHeightPerc(80,
-					grid.Widget(w.barChart,
+					grid.Widget(w.reqPerSec,
 						container.Border(linestyle.Light),
 						container.BorderTitle("Req/s"),
 						container.BorderTitleAlignLeft(),
@@ -246,18 +245,6 @@ func newBarChart(ctx context.Context) (*barchart.BarChart, error) {
 		return nil, err
 	}
 
-	const (
-		bars = 6
-		max  = 100
-	)
-	values := make([]int, bars)
-	go periodic(ctx, 1*time.Second, func() error {
-		for i := range values {
-			values[i] = int(rand.Int31n(max + 1))
-		}
-
-		return bc.Values(values, max)
-	})
 	return bc, nil
 }
 
