@@ -25,6 +25,11 @@ type widgets struct {
 	alertMessage   *text.Text
 	ratesMsg       *text.Text
 	mostHits       *text.Text
+	httpCodes100   *text.Text
+	httpCodes200   *text.Text
+	httpCodes300   *text.Text
+	httpCodes400   *text.Text
+	httpCodes500   *text.Text
 	barChart       *barchart.BarChart
 }
 
@@ -65,6 +70,31 @@ func newWidgets(ctx context.Context, c *container.Container) (*widgets, error) {
 		return nil, err
 	}
 
+	httpCodes100, err := newTextLabel("100:")
+	if err != nil {
+		return nil, err
+	}
+
+	httpCodes200, err := newTextLabel("200:")
+	if err != nil {
+		return nil, err
+	}
+
+	httpCodes300, err := newTextLabel("300:")
+	if err != nil {
+		return nil, err
+	}
+
+	httpCodes400, err := newTextLabel("400:")
+	if err != nil {
+		return nil, err
+	}
+
+	httpCodes500, err := newTextLabel("500:")
+	if err != nil {
+		return nil, err
+	}
+
 	return &widgets{
 		logFilePath:    logFilePath,
 		alertThreshold: alertThreshold,
@@ -72,6 +102,11 @@ func newWidgets(ctx context.Context, c *container.Container) (*widgets, error) {
 		alertMessage:   alertMessage,
 		ratesMsg:       ratesMsg,
 		mostHits:       mostHits,
+		httpCodes100:   httpCodes100,
+		httpCodes200:   httpCodes200,
+		httpCodes300:   httpCodes300,
+		httpCodes400:   httpCodes400,
+		httpCodes500:   httpCodes500,
 		barChart:       bc,
 	}, nil
 }
@@ -132,11 +167,32 @@ func gridLayout(w *widgets) ([]container.Option, error) {
 						container.BorderTitleAlignLeft(),
 					),
 				),
+				// HTTP error codes - add a container
 				grid.RowHeightPerc(50,
-					grid.Widget(w.barChart,
-						container.Border(linestyle.Light),
-						container.BorderTitle("BarChart3"),
-						container.BorderTitleAlignLeft(),
+					grid.ColWidthPerc(20,
+						grid.Widget(w.httpCodes100,
+							container.Border(linestyle.None),
+						),
+					),
+					grid.ColWidthPerc(20,
+						grid.Widget(w.httpCodes200,
+							container.Border(linestyle.None),
+						),
+					),
+					grid.ColWidthPerc(20,
+						grid.Widget(w.httpCodes300,
+							container.Border(linestyle.None),
+						),
+					),
+					grid.ColWidthPerc(20,
+						grid.Widget(w.httpCodes400,
+							container.Border(linestyle.None),
+						),
+					),
+					grid.ColWidthPerc(20,
+						grid.Widget(w.httpCodes500,
+							container.Border(linestyle.None),
+						),
 					),
 				),
 			),
