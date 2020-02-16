@@ -24,6 +24,6 @@ type rateMsgContent struct {
 	nbFailures    uint64
 }
 
-func formatRatesMsg(r rateMsgContent) string {
+func formatRateMsg(r rateMsgContent) string {
 	return fmt.Sprintf(rateMsgFormat, r.frameDuration, r.maxReqPSec, r.avgReqPSec, r.nbSuccesses, r.nbFailures)
 }

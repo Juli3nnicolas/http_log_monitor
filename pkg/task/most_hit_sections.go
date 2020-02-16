@@ -2,6 +2,7 @@ package task
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/Juli3nnicolas/http_log_monitor/pkg/log"
@@ -10,12 +11,13 @@ import (
 // FindMostHitSections reads the logs and agregate them by sections. A log occurence is called a hit.
 // This task returns information on hits (how many times they were found, how were they called...).
 type FindMostHitSections struct {
-	sectionHits map[string]Hit
+	sectionHits []Hit
 	done        bool
 }
 
 // Hit is a structure representing a request occurence in the log file.
 type Hit struct {
+	Section string
 	Total   uint64
 	Methods map[string]uint64
 }
@@ -25,6 +27,7 @@ func (o *Hit) set(section, method string) {
 	if o.Methods == nil {
 		o.Methods = make(map[string]uint64)
 	}
+	o.Section = section
 	o.Total++
 	o.Methods[method]++
 }
@@ -55,25 +58,50 @@ func (o *FindMostHitSections) Run(args ...interface{}) error {
 		return fmt.Errorf("type error - got %T instead of []log.Info", args[0])
 	}
 
-	logsLen := len(logs)
-	o.sectionHits = make(map[string]Hit, logsLen)
+	hitMap := make(map[string]int)
+	o.sectionHits = make([]Hit, 0, 1)
 
-	for i := 0; i < logsLen; i++ {
+	for i := range logs {
 		section := extractSection(logs[i].Request.Route)
 		if section != "" {
-			hit := o.sectionHits[section]
-			hit.set(section, logs[i].Request.Method)
-			o.sectionHits[section] = hit
+			j, found := hitMap[section]
+
+			if found {
+				o.sectionHits[j].set(section, logs[i].Request.Method)
+			} else {
+				hit := Hit{}
+				hit.set(section, logs[i].Request.Method)
+				o.sectionHits = append(o.sectionHits, hit)
+				hitMap[section] = len(o.sectionHits) - 1
+			}
 		}
 	}
 
+	sort.Sort(sectionHits(o.sectionHits))
 	o.done = true
 
 	return nil
 }
 
+type sectionHits []Hit
+
+func (s sectionHits) Len() int {
+	return len(s)
+}
+
+func (s sectionHits) Less(i, j int) bool {
+	return s[i].Total > s[j].Total
+}
+
+func (s sectionHits) Swap(i, j int) {
+	tmp := s[i]
+	s[i] = s[j]
+	s[j] = tmp
+}
+
 // Result returns the result of the work carried out by the task if the task is done. Returns nil otherwise.
-func (o *FindMostHitSections) Result() map[string]Hit {
+// Returns a slice of section-hits in decreasing-order on Hit.Total
+func (o *FindMostHitSections) Result() []Hit {
 	if o.IsDone() {
 		return o.sectionHits
 	}

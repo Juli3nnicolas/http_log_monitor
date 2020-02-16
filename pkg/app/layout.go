@@ -53,7 +53,7 @@ func newWidgets(ctx context.Context, c *container.Container) (*widgets, error) {
 		return nil, err
 	}
 
-	ratesMsg, err := newTextLabel(formatRatesMsg(rateMsgContent{
+	ratesMsg, err := newTextLabel(formatRateMsg(rateMsgContent{
 		frameDuration: 1,
 		maxReqPSec:    0,
 		avgReqPSec:    0,

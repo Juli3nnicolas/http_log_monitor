@@ -23,7 +23,7 @@ type renderer struct {
 }
 
 type ViewFrame struct {
-	Hits  map[string]task.Hit
+	Hits  []task.Hit
 	Rates task.Rates
 	Codes map[uint32]uint64
 }
@@ -115,14 +115,14 @@ func (r *renderer) update(viewChan chan ViewFrame, errorHandle func(error)) {
 	}
 }
 
-func updateHit(w *widgets, hits map[string]task.Hit) error {
+func updateHit(w *widgets, hits []task.Hit) error {
 	var msg string
 
 	// Limit to the 10 firsts, order them by decreasing order
-	for section, hit := range hits {
+	for i := range hits {
 
-		msg += section + ": " + strconv.Itoa(int(hit.Total)) + " ("
-		for method, count := range hit.Methods {
+		msg += hits[i].Section + ": " + strconv.Itoa(int(hits[i].Total)) + " ("
+		for method, count := range hits[i].Methods {
 			msg += method + ": " + strconv.Itoa(int(count)) + ", "
 		}
 		msg += ")\n"
@@ -139,7 +139,7 @@ func updateRates(w *widgets, r *task.Rates) error {
 	f := &r.Frame
 	g := &r.Global
 
-	msg := formatRatesMsg(rateMsgContent{
+	msg := formatRateMsg(rateMsgContent{
 		frameDuration: f.Duration,
 		maxReqPSec:    g.MaxReqPerS,
 		avgReqPSec:    g.AvgReqPerS,
