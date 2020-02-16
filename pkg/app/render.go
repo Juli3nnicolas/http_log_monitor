@@ -128,6 +128,10 @@ func updateHit(w *widgets, hits map[string]task.Hit) error {
 		msg += ")\n"
 	}
 
+	if msg == "" {
+		msg = "No traffic"
+	}
+
 	return updateTextWidget(w.mostHits, msg)
 }
 
