@@ -160,7 +160,13 @@ func createUpdateReqPerSeconds() func(w *widgets, r *task.Rates) error {
 		reqs[0] = int(r.Frame.ReqPerS)
 
 		lastreq = reqs
-		return w.reqPerSec.Values(lastreq[:], int(r.Global.MaxReqPerS))
+		maxReqPerS := int(r.Global.MaxReqPerS)
+
+		// Values cannot equal to 0
+		if maxReqPerS == 0 {
+			maxReqPerS = 1
+		}
+		return w.reqPerSec.Values(lastreq[:], maxReqPerS)
 	}
 
 	return update
@@ -238,6 +244,6 @@ func LogUpdateError(path string) func(error) {
 		path = "/var/log/http_log_monitor/renderupdate.log"
 	}
 
-	errLog := func(error) { fmt.Println(path) }
+	errLog := func(err error) { fmt.Println(err) }
 	return errLog
 }
