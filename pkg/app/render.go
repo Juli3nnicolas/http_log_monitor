@@ -118,12 +118,17 @@ func (r *renderer) update(viewChan chan ViewFrame, errorHandle func(error)) {
 func updateHit(w *widgets, hits []task.Hit) error {
 	var msg string
 
-	// Limit to the 10 firsts, order them by decreasing order
 	for i := range hits {
 
+		j, lenMethods := 0, len(hits[i].Methods)-1
 		msg += hits[i].Section + ": " + strconv.Itoa(int(hits[i].Total)) + " ("
 		for method, count := range hits[i].Methods {
-			msg += method + ": " + strconv.Itoa(int(count)) + ", "
+			sep := ", "
+			if j == lenMethods {
+				sep = ""
+			}
+
+			msg += method + ": " + strconv.Itoa(int(count)) + sep
 		}
 		msg += ")\n"
 	}
