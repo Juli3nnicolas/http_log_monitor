@@ -38,52 +38,58 @@ func newWidgets(ctx context.Context, c *container.Container) (*widgets, error) {
 		return nil, err
 	}
 
-	alertThreshold, err := newTextInput("Threshold (req/s): ", "10", func(string) error { return nil })
+	alertThreshold, err := newTextInput(alertThresholdHeader, "10", func(string) error { return nil })
 	if err != nil {
 		return nil, err
 	}
 
-	alertDuration, err := newTextInput("Duration (s): ", "10", func(string) error { return nil })
+	alertDuration, err := newTextInput(alertDurationHeader, "10", func(string) error { return nil })
 	if err != nil {
 		return nil, err
 	}
 
-	alertMessage, err := newTextLabel("Message:")
+	alertMessage, err := newTextLabel(alertMessageHeader)
 	if err != nil {
 		return nil, err
 	}
 
-	ratesMsg, err := newTextLabel("Frame: 1 s Max: 30 req/s Avg: 5 req/s Success: 5 Failure: 0")
+	ratesMsg, err := newTextLabel(formatRatesMsg(rateMsgContent{
+		frameDuration: 1,
+		maxReqPSec:    0,
+		avgReqPSec:    0,
+		nbSuccesses:   0,
+		nbFailures:    0,
+	}))
 	if err != nil {
 		return nil, err
 	}
 
-	mostHits, err := newTextLabel("/instance: 5 req (GET: 3, POST: 2)\n/: 2 req (GET: 2)")
+	mostHits, err := newTextLabel(mostHitsNoTraffic)
 	if err != nil {
 		return nil, err
 	}
 
-	httpCodes100, err := newTextLabel("100:")
+	httpCodes100, err := newTextLabel(httpCodes100Header)
 	if err != nil {
 		return nil, err
 	}
 
-	httpCodes200, err := newTextLabel("200:")
+	httpCodes200, err := newTextLabel(httpCodes200Header)
 	if err != nil {
 		return nil, err
 	}
 
-	httpCodes300, err := newTextLabel("300:")
+	httpCodes300, err := newTextLabel(httpCodes300Header)
 	if err != nil {
 		return nil, err
 	}
 
-	httpCodes400, err := newTextLabel("400:")
+	httpCodes400, err := newTextLabel(httpCodes400Header)
 	if err != nil {
 		return nil, err
 	}
 
-	httpCodes500, err := newTextLabel("500:")
+	httpCodes500, err := newTextLabel(httpCodes500Header)
 	if err != nil {
 		return nil, err
 	}

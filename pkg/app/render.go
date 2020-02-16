@@ -129,7 +129,7 @@ func updateHit(w *widgets, hits map[string]task.Hit) error {
 	}
 
 	if msg == "" {
-		msg = "No traffic"
+		msg = mostHitsNoTraffic
 	}
 
 	return updateTextWidget(w.mostHits, msg)
@@ -138,8 +138,14 @@ func updateHit(w *widgets, hits map[string]task.Hit) error {
 func updateRates(w *widgets, r *task.Rates) error {
 	f := &r.Frame
 	g := &r.Global
-	msg := fmt.Sprintf("Frame: %d s Max: %d req/s Avg: %d req/s Success: %d Failure: %d",
-		f.Duration, g.MaxReqPerS, g.AvgReqPerS, f.NbSuccess, f.NbFailures)
+
+	msg := formatRatesMsg(rateMsgContent{
+		frameDuration: f.Duration,
+		maxReqPSec:    g.MaxReqPerS,
+		avgReqPSec:    g.AvgReqPerS,
+		nbSuccesses:   f.NbSuccess,
+		nbFailures:    f.NbFailures,
+	})
 
 	return updateTextWidget(w.ratesMsg, msg)
 }
