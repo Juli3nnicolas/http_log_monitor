@@ -1,6 +1,9 @@
 package reader
 
-import "github.com/Juli3nnicolas/http_log_monitor/pkg/log"
+import (
+	"github.com/Juli3nnicolas/http_log_monitor/pkg/log"
+	"github.com/Juli3nnicolas/http_log_monitor/pkg/logger"
+)
 
 // Async calls a reader asynchronously and stores its output into a dedicated buffer
 // At the moment, each Async readers correctly handle one correct parralel read.
@@ -64,19 +67,20 @@ func (r *Async) Flush() {
 }
 
 // read reads the file content asynchronously. It fills r.buffer.
-func (r *Async) read() error {
+func (r *Async) read() {
 	for {
 		select {
 		case s, ok := <-r.stop:
 			if s || !ok {
 				r.err = nil
-				return nil
+				return
 			}
 		default:
 			output, err := r.Reader.Read()
 			if err != nil {
 				r.err = err
-				return err
+				logger.New().Errorln(err)
+				continue
 			}
 			if output != nil {
 				r.buffer = append(r.buffer, output...)
