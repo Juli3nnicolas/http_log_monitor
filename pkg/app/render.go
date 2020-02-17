@@ -26,6 +26,7 @@ type ViewFrame struct {
 	Hits  []task.Hit
 	Rates task.Rates
 	Codes map[uint32]uint64
+	Alert task.AlertState
 }
 
 // rootID is the ID assigned to the root container.
@@ -110,6 +111,10 @@ func (r *renderer) update(viewChan chan ViewFrame, errorHandle func(error)) {
 		}
 
 		if err := updateCodes(w, view.Codes); err != nil {
+			errorHandle(err)
+		}
+
+		if err := updateAlerts(w, &view.Alert); err != nil {
 			errorHandle(err)
 		}
 	}
@@ -221,6 +226,10 @@ func updateCodes(w *widgets, codes map[uint32]uint64) error {
 		return err
 	}
 	return updateTextWidget(w.httpCodes500, msg500)
+}
+
+func updateAlerts(w *widgets, state *task.AlertState) error {
+	return nil
 }
 
 func httpReturnCodeLine(code uint32, count uint64) string {

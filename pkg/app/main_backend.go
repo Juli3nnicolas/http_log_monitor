@@ -1,48 +1,17 @@
 package app
 
 import (
+	"fmt"
 	"time"
 
-	"github.com/Juli3nnicolas/http_log_monitor/pkg/config"
 	"github.com/Juli3nnicolas/http_log_monitor/pkg/reader"
 	"github.com/Juli3nnicolas/http_log_monitor/pkg/task"
 	"github.com/Juli3nnicolas/http_log_monitor/pkg/timer"
 )
 
-type Backend struct {
-}
-
-func (b *Backend) init() error {
+func RunBack(frame time.Duration) {
 	fetchLogs := task.FetchLogs{}
 	err := fetchLogs.Init("/tmp/access.log", reader.CommonLogFormatParser())
-	if err != nil {
-		return err
-	}
-
-	mostHits := task.FindMostHitSections{}
-	err = mostHits.Init()
-	if err != nil {
-		return err
-	}
-
-	rates := task.MeasureRates{}
-	err = rates.Init()
-	if err != nil {
-		return err
-	}
-
-	countCodes := task.CountErrorCodes{}
-	err = countCodes.Init()
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (b *Backend) run(frame time.Duration, outputChan chan ViewFrame) {
-	fetchLogs := task.FetchLogs{}
-	err := fetchLogs.Init(config.DefaultLogFilePath, reader.CommonLogFormatParser())
 	if err != nil {
 		panic(err)
 	}
@@ -66,7 +35,7 @@ func (b *Backend) run(frame time.Duration, outputChan chan ViewFrame) {
 	}
 
 	alert := task.Alert{}
-	err = alert.Init(config.DefaultAlertFrameDuration, config.DefaultAlertThreshold)
+	err = alert.Init(time.Second, uint64(4))
 	if err != nil {
 		panic(err)
 	}
@@ -141,9 +110,8 @@ func (b *Backend) run(frame time.Duration, outputChan chan ViewFrame) {
 					Hits:  mostHits.Result(),
 					Rates: rates.Result(),
 					Codes: countCodes.Result(),
-					Alert: alert.Result(),
 				}
-				outputChan <- view
+				fmt.Println(view, alert.Result(), t.Now())
 				resultSent = true
 			}
 		}
@@ -168,11 +136,6 @@ func (b *Backend) run(frame time.Duration, outputChan chan ViewFrame) {
 		if err != nil {
 			panic(err)
 		}
-
-		err = alert.AfterRun()
-		if err != nil {
-			panic(err)
-		}
 	}
 
 	err = fetchLogs.Close()
@@ -194,14 +157,4 @@ func (b *Backend) run(frame time.Duration, outputChan chan ViewFrame) {
 	if err != nil {
 		panic(err)
 	}
-
-	err = alert.Close()
-	if err != nil {
-		panic(err)
-	}
-}
-
-func (b *Backend) shutdown() error {
-
-	return nil
 }
