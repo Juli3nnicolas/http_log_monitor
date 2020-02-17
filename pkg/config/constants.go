@@ -4,7 +4,7 @@ import "time"
 
 const (
 	// DefaultAppErrorLogFile is the path to the app's error log file
-	DefaultAppErrorLogFile string = "/var/log/http_log_monitor.log"
+	DefaultAppErrorLogFile string = "/usr/local/var/log/http_log_monitor.log"
 	// DefaultLogFilePath refers to the first file the app will try to read the logs from
 	DefaultLogFilePath string = "/tmp/access.log"
 	// DefaultUpdateFrameDuration refers to the default time the app will carry out all its measures
