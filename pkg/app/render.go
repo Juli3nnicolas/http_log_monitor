@@ -20,6 +20,7 @@ type renderer struct {
 	container *container.Container
 	cancel    context.CancelFunc
 	gridOpts  []container.Option
+	alert     *task.AlertState
 }
 
 type ViewFrame struct {
@@ -114,7 +115,7 @@ func (r *renderer) update(viewChan chan ViewFrame, errorHandle func(error)) {
 			errorHandle(err)
 		}
 
-		if err := updateAlerts(w, &view.Alert); err != nil {
+		if err := r.updateAlerts(&view.Alert); err != nil {
 			errorHandle(err)
 		}
 	}
@@ -228,7 +229,21 @@ func updateCodes(w *widgets, codes map[uint32]uint64) error {
 	return updateTextWidget(w.httpCodes500, msg500)
 }
 
-func updateAlerts(w *widgets, state *task.AlertState) error {
+func (r *renderer) updateAlerts(alert *task.AlertState) error {
+	// The alarm is has been activated so log it
+	if alert.IsOn {
+		r.alert = alert
+		msg := fmt.Sprintf("High traffic generated an alert - hits = %d, triggered at %v", 0, alert.Date)
+		return updateTextWidget(r.widgets.alertMessage, msg)
+	}
+
+	// The alarm has just been desactivated, log it
+	if r.alert != nil && r.alert.IsOn && !alert.IsOn {
+		r.alert = alert
+		msg := fmt.Sprintf("Traffic is back to normal - recovery time is %v", alert.Date)
+		return updateTextWidget(r.widgets.alertMessage, msg)
+	}
+
 	return nil
 }
 
