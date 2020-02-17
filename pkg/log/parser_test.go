@@ -56,3 +56,8 @@ func TestParseReturnsValidStructFromStandardEntryWithAdditionalFields(t *testing
 	assert.Equal(t, uint64(612), info.Request.Size)
 	assert.Equal(t, "HTTP/1.1", info.Request.Version)
 }
+
+func TestParseReturnsAnErrorIfTheInputStringIsEmpty(t *testing.T) {
+	_, err := Parse("")
+	assert.NotNil(t, err)
+}

@@ -1,6 +1,7 @@
 package log
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -26,6 +27,10 @@ import (
 
 // Parse reads a log string and returns a properly hydrated Info struct
 func Parse(line string) (Info, error) {
+	if line == "" {
+		return Info{}, fmt.Errorf("log.Parse error - empty line")
+	}
+
 	fields := strings.Split(line, " ")
 
 	localTime, err := parseLocalTime(strings.Join(fields[3:5], " "))
