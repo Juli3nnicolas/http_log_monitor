@@ -4,6 +4,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Juli3nnicolas/http_log_monitor/pkg/timer"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -29,22 +31,31 @@ func TestRunTurnTheAlertOnAndOffCorrectly(t *testing.T) {
 		},
 	}
 
+	ti := &timer.TimeStub{
+		NowStub: func() func() time.Time {
+			i := -1
+			pi := &i
+			t2 := time.Now()
+
+			return func() time.Time {
+				*pi++
+				return t2.Add(time.Duration(*pi) * time.Second)
+			}
+		}(),
+	}
+
 	// Exercise & validation stages
-	err := alert.Run(alertOn)
+	err := alert.Run(alertOn, ti)
 	assert.Nil(t, err)
 	res := alert.Result()
 	assert.False(t, res.IsOn)
 
-	time.Sleep(time.Second)
-
-	err = alert.Run(alertOn)
+	err = alert.Run(alertOn, ti)
 	assert.Nil(t, err)
 	res = alert.Result()
 	assert.True(t, res.IsOn)
 
-	time.Sleep(time.Second)
-
-	err = alert.Run(alertOff)
+	err = alert.Run(alertOff, ti)
 	assert.Nil(t, err)
 	res = alert.Result()
 	assert.False(t, res.IsOn)

@@ -3,6 +3,8 @@ package task
 import (
 	"fmt"
 	"time"
+
+	"github.com/Juli3nnicolas/http_log_monitor/pkg/timer"
 )
 
 // Alert is a task to alert users that a specific threshold has been exceeded
@@ -79,13 +81,15 @@ func (o *Alert) BeforeRun() error {
 }
 
 // Run executes the monitoring process, triggers or recovers the alert
-// Parameter :
-// rates task.Rates : traffic information used to trigger the alert
+// Parameters :
+// - rates task.Rates : traffic information used to trigger the alert
 // (only task.Rates.Frame.ReqPerS is used at the moment)
+// - timer : a Timer interface, only uses Timer.Now()
 func (o *Alert) Run(args ...interface{}) error {
 
-	if len(args) != 1 {
-		return fmt.Errorf("wrong parameters -  this function expects a task.Rates parameter")
+	argsLen := len(args)
+	if argsLen != 2 {
+		return fmt.Errorf("wrong parameters -  this function expects a task.Rates parameter and a Timer struct")
 	}
 
 	var rates Rates
@@ -94,7 +98,12 @@ func (o *Alert) Run(args ...interface{}) error {
 		return fmt.Errorf("type error - got %T instead of %T", args[0], rates)
 	}
 
-	now := time.Now()
+	t, ok := args[1].(timer.Timer)
+	if !ok {
+		return fmt.Errorf("type error - got %T instead of %T", args[1], t)
+	}
+
+	now := t.Now()
 	o.avgReq = (o.avgReq*o.nbMeasures + rates.Frame.ReqPerS) / (o.nbMeasures + 1)
 	o.nbMeasures++
 
