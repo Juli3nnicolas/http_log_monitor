@@ -125,15 +125,13 @@ func (b *Backend) run(frame time.Duration, outputChan chan ViewFrame) {
 				if err = countCodes.Run(logs); err != nil {
 					panic(err)
 				}
-				allDone = true
 			}
 
-			// Remark this task is infinite
-			// TODO : Make a generic function to get metrics out of a log.Info
 			if !alert.IsDone() && rates.IsDone() {
 				if err = alert.Run(rates.Result(), t); err != nil {
 					panic(err)
 				}
+				allDone = true
 			}
 
 			if allDone && !resultSent {

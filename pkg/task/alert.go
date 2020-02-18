@@ -114,19 +114,18 @@ func (o *Alert) Run(args ...interface{}) error {
 
 	now := t.Now()
 
-	// floats are used to be sure to work out the exact
+	// floats are used to be sure to work out the exact value (to avoid decimal-part-truncation)
 	o.avgReq = (o.avgReq*o.nbMeasures + rates.Frame.ReqPerS) / (o.nbMeasures + 1)
 	o.nbMeasures++
 
 	// Count ongoing requests in current time-frame
-	currentNbReqs := float64(rates.Frame.ReqPerS) * float64(rates.Frame.Duration)
-	o.nbReqs += currentNbReqs
+	o.nbReqs += float64(rates.Frame.ReqPerS) * float64(rates.Frame.Duration)
 
 	if now.Sub(o.start) >= o.duration {
 		if !o.state.IsOn && o.avgReq >= o.threshold {
 			o.state.IsOn = true
 			o.state.Date = now
-			o.state.NbReqs = uint64(o.nbReqs - currentNbReqs)
+			o.state.NbReqs = uint64(o.nbReqs)
 			o.state.Avg = o.avgReq
 		}
 
@@ -160,7 +159,7 @@ func (o *Alert) Result() AlertState {
 
 // IsDone always returns false as an alert is a never-ending monitoring-task
 func (o *Alert) IsDone() bool {
-	return false
+	return o.done
 }
 
 // Close wipes the object's content. Call Init to use it again.
