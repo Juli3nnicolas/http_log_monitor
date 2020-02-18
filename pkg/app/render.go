@@ -162,7 +162,7 @@ func updateRates(w *widgets, r *task.Rates) error {
 }
 
 func createUpdateReqPerSeconds() func(w *widgets, r *task.Rates) error {
-	lastreq := make([]int, 5)
+	lastreq := make([]int, 12)
 	update := func(w *widgets, r *task.Rates) error {
 		lenLastReqs := len(lastreq)
 
