@@ -7,8 +7,8 @@ import (
 )
 
 const (
-	alertThresholdMessageFormat string = "Threshold (req/s): %d req/s"
-	alertDurationMessageFormat  string = "Duration (s): %d s"
+	alertThresholdMessageFormat string = "Threshold: %d req/s"
+	alertDurationMessageFormat  string = "Duration: %s"
 	alertMessageHeader          string = "Message:"
 	alertOnMessageFormat        string = "High traffic generated an alert - hits = %d, triggered at %v"
 	alertOffMessageFormat       string = "Traffic is back to normal - recovery time is %v"
@@ -55,5 +55,5 @@ func formatAlertInfoMsg(alert *task.AlertState) string {
 		alertThresholdMessageFormat+" "+
 			alertDurationMessageFormat+" ",
 		alert.Threshold,
-		alert.Duration)
+		alert.Duration.String())
 }

@@ -78,6 +78,8 @@ func (o *Alert) Init(args ...interface{}) error {
 
 	o.duration = duration
 	o.threshold = threshold
+	o.state.Duration = duration
+	o.state.Threshold = threshold
 
 	return nil
 }
