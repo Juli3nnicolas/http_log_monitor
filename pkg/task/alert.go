@@ -40,6 +40,10 @@ type AlertState struct {
 	// IsOn is true when the alert is active.
 	// It is false if there wasn't any alert or the system recovered
 	IsOn bool
+	// Duration is the time spent to check the alert, and the time it takes to cool down
+	Duration time.Duration
+	// Threshold is the value triggering the alert if the average rate is greater on a whole Duration-period
+	Threshold uint64
 	// Avg is the average req/s the alert was triggered at (always 0 if IsOn)
 	Avg uint64
 	// NbReqs is number of requests that triggered the alert. Always equals 0 when IsOn == false
