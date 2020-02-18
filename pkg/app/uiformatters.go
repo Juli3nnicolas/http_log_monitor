@@ -1,6 +1,10 @@
 package app
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/Juli3nnicolas/http_log_monitor/pkg/task"
+)
 
 const (
 	alertThresholdMessageFormat string = "Threshold (req/s): %d req/s"
@@ -28,4 +32,28 @@ type rateMsgContent struct {
 
 func formatRateMsg(r rateMsgContent) string {
 	return fmt.Sprintf(rateMsgFormat, r.frameDuration, r.maxReqPSec, r.avgReqPSec, r.nbSuccesses, r.nbFailures)
+}
+
+func formatAlertOnMsg(alert *task.AlertState) string {
+	return formatAlertInfoMsg(alert) +
+		fmt.Sprintf(
+			alertMessageHeader+" "+
+				alertOnMessageFormat,
+			alert.NbReqs, alert.Date)
+}
+
+func formatAlertOffMsg(alert *task.AlertState) string {
+	return formatAlertInfoMsg(alert) +
+		fmt.Sprintf(
+			alertMessageHeader+" "+
+				alertOffMessageFormat,
+			alert.Date)
+}
+
+func formatAlertInfoMsg(alert *task.AlertState) string {
+	return fmt.Sprintf(
+		alertThresholdMessageFormat+" "+
+			alertDurationMessageFormat+" ",
+		alert.Threshold,
+		alert.Duration)
 }

@@ -233,37 +233,19 @@ func (r *renderer) updateAlerts(alert *task.AlertState) error {
 	// The alarm is has been activated so log it
 	if alert.IsOn {
 		r.alert = alert
-		msg := fmt.Sprintf(
-			alertThresholdMessageFormat+" "+
-				alertDurationMessageFormat+" "+
-				alertMessageHeader+" "+
-				alertOnMessageFormat,
-
-			alert.Threshold,
-			alert.Duration,
-			alert.NbReqs, alert.Date)
-
+		msg := formatAlertOnMsg(r.alert)
 		return updateTextWidget(r.widgets.alertMessage, msg)
 	}
 
 	// The alarm has just been desactivated, log it
 	if r.alert != nil && r.alert.IsOn && !alert.IsOn {
 		r.alert = alert
-		//msg := fmt.Sprintf("Traffic is back to normal - recovery time is %v", alert.Date)
-		msg := fmt.Sprintf(
-			alertThresholdMessageFormat+" "+
-				alertDurationMessageFormat+" "+
-				alertMessageHeader+" "+
-				alertOffMessageFormat,
-
-			alert.Threshold,
-			alert.Duration,
-			alert.Date)
-
+		msg := formatAlertOffMsg(r.alert)
 		return updateTextWidget(r.widgets.alertMessage, msg)
 	}
 
-	return nil
+	msg := formatAlertInfoMsg(alert)
+	return updateTextWidget(r.widgets.alertMessage, msg)
 }
 
 func httpReturnCodeLine(code uint32, count uint64) string {
