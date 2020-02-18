@@ -35,7 +35,7 @@ func (o *ASyncDBuf) Open(args ...interface{}) error {
 		return fmt.Errorf("second parameter should be a reader.Parser")
 	}
 
-	fileReader := File{Parse: parser}
+	fileReader := Tail{Parse: parser}
 	o.reader.Reader = &fileReader
 
 	err := o.reader.Open(path)
