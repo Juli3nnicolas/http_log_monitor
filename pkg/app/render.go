@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/Juli3nnicolas/http_log_monitor/pkg/logger"
 	"github.com/Juli3nnicolas/http_log_monitor/pkg/task"
 	"github.com/mum4k/termdash"
 	"github.com/mum4k/termdash/container"
@@ -278,6 +279,7 @@ func LogUpdateError(path string) func(error) {
 		path = "/var/log/http_log_monitor/renderupdate.log"
 	}
 
-	errLog := func(err error) { fmt.Println(err) }
+	l := logger.New()
+	errLog := func(err error) { l.Errorf(err.Error()) }
 	return errLog
 }
