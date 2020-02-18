@@ -1,6 +1,6 @@
 package app
 
-import "time"
+import "github.com/Juli3nnicolas/http_log_monitor/pkg/config"
 
 // Run executes the entire application (both frontend and backend)
 func Run() error {
@@ -21,7 +21,7 @@ func Run() error {
 
 	updateChan := make(chan ViewFrame)
 	go r.update(updateChan, LogUpdateError(""))
-	go b.run(time.Second, updateChan)
+	go b.run(config.DefaultUpdateFrameDuration, updateChan)
 
 	err = r.render(ctx)
 	if err != nil {

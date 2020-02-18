@@ -3,7 +3,9 @@ package reader
 import (
 	"fmt"
 	"io"
+	"time"
 
+	"github.com/Juli3nnicolas/http_log_monitor/pkg/config"
 	"github.com/Juli3nnicolas/http_log_monitor/pkg/log"
 	"github.com/papertrail/go-tail/follower"
 )
@@ -47,7 +49,17 @@ func (r *Tail) Open(path ...interface{}) error {
 // Sleeps wawaiting for data when io.EOF is reached
 func (r *Tail) Read() ([]log.Info, error) {
 
-	line := <-r.tailer.Lines()
+	select {
+	case line := <-r.tailer.Lines():
+		return r.parseLine(line)
+
+	// TODO : Remove this value, it should be injected from open
+	case <-time.After(config.DefaultUpdateFrameDuration):
+		return nil, nil
+	}
+}
+
+func (r *Tail) parseLine(line follower.Line) ([]log.Info, error) {
 	if r.tailer.Err() != nil {
 		return nil, r.tailer.Err()
 	}
