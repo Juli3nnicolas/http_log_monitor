@@ -18,32 +18,20 @@ const redrawInterval = 250 * time.Millisecond
 
 // widgets holds the widgets used by this demo.
 type widgets struct {
-	alertThreshold *textinput.TextInput
-	alertDuration  *textinput.TextInput
-	alertMessage   *text.Text
-	ratesMsg       *text.Text
-	mostHits       *text.Text
-	httpCodes100   *text.Text
-	httpCodes200   *text.Text
-	httpCodes300   *text.Text
-	httpCodes400   *text.Text
-	httpCodes500   *text.Text
-	reqPerSec      *barchart.BarChart
+	alertMessage *text.Text
+	ratesMsg     *text.Text
+	mostHits     *text.Text
+	httpCodes100 *text.Text
+	httpCodes200 *text.Text
+	httpCodes300 *text.Text
+	httpCodes400 *text.Text
+	httpCodes500 *text.Text
+	reqPerSec    *barchart.BarChart
 }
 
 // newWidgets creates all widgets used by this demo.
 func newWidgets(ctx context.Context, c *container.Container) (*widgets, error) {
 	reqPerSec, err := newBarChart(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	alertThreshold, err := newTextInput(alertThresholdHeader, "10", func(string) error { return nil })
-	if err != nil {
-		return nil, err
-	}
-
-	alertDuration, err := newTextInput(alertDurationHeader, "10", func(string) error { return nil })
 	if err != nil {
 		return nil, err
 	}
@@ -95,17 +83,15 @@ func newWidgets(ctx context.Context, c *container.Container) (*widgets, error) {
 	}
 
 	return &widgets{
-		alertThreshold: alertThreshold,
-		alertDuration:  alertDuration,
-		alertMessage:   alertMessage,
-		ratesMsg:       ratesMsg,
-		mostHits:       mostHits,
-		httpCodes100:   httpCodes100,
-		httpCodes200:   httpCodes200,
-		httpCodes300:   httpCodes300,
-		httpCodes400:   httpCodes400,
-		httpCodes500:   httpCodes500,
-		reqPerSec:      reqPerSec,
+		alertMessage: alertMessage,
+		ratesMsg:     ratesMsg,
+		mostHits:     mostHits,
+		httpCodes100: httpCodes100,
+		httpCodes200: httpCodes200,
+		httpCodes300: httpCodes300,
+		httpCodes400: httpCodes400,
+		httpCodes500: httpCodes500,
+		reqPerSec:    reqPerSec,
 	}, nil
 }
 
@@ -123,17 +109,7 @@ func gridLayout(w *widgets) ([]container.Option, error) {
 				container.BorderTitleAlignLeft(),
 			},
 			grid.ColWidthPerc(25,
-				grid.ColWidthPerc(12,
-					grid.Widget(w.alertThreshold,
-						container.Border(linestyle.None),
-					),
-				),
-				grid.ColWidthPerc(12,
-					grid.Widget(w.alertDuration,
-						container.Border(linestyle.None),
-					),
-				),
-				grid.ColWidthPerc(75,
+				grid.ColWidthPerc(99,
 					grid.Widget(w.alertMessage,
 						container.Border(linestyle.None),
 					),
