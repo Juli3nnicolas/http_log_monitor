@@ -233,7 +233,7 @@ func (r *renderer) updateAlerts(alert *task.AlertState) error {
 	// The alarm is has been activated so log it
 	if alert.IsOn {
 		r.alert = alert
-		msg := fmt.Sprintf("High traffic generated an alert - hits = %d, triggered at %v", 0, alert.Date)
+		msg := fmt.Sprintf("High traffic generated an alert - hits = %d, triggered at %v", alert.NbReqs, alert.Date)
 		return updateTextWidget(r.widgets.alertMessage, msg)
 	}
 
