@@ -36,6 +36,8 @@ type AlertState struct {
 	// IsOn is true when the alert is active.
 	// It is false if there wasn't any alert or the system recovered
 	IsOn bool
+	// Avg is the average req/s the alert was triggered at (always 0 if IsOn)
+	Avg uint64
 	// Date is the time the alert has been switched on or off. It has a default value
 	// in case the alert has never been activated.
 	Date time.Time
@@ -111,11 +113,13 @@ func (o *Alert) Run(args ...interface{}) error {
 		if !o.state.IsOn && o.avgReq >= o.threshold {
 			o.state.IsOn = true
 			o.state.Date = now
+			o.state.Avg = o.avgReq
 		}
 
 		if o.state.IsOn && o.avgReq < o.threshold {
 			o.state.IsOn = false
 			o.state.Date = now
+			o.state.Avg = uint64(0)
 		}
 
 		// Restart a new monitoring process
