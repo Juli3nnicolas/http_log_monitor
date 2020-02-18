@@ -244,8 +244,12 @@ func (r *renderer) updateAlerts(alert *task.AlertState) error {
 		return updateTextWidget(r.widgets.alertMessage, msg)
 	}
 
-	msg := formatAlertInfoMsg(alert)
-	return updateTextWidget(r.widgets.alertMessage, msg)
+	if r.alert == nil {
+		msg := formatAlertInfoMsg(alert)
+		return updateTextWidget(r.widgets.alertMessage, msg)
+	}
+
+	return nil
 }
 
 func httpReturnCodeLine(code uint32, count uint64) string {
