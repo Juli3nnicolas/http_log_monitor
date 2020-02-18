@@ -23,7 +23,6 @@ present to be notified when traffic gets awry.`,
 		},
 	}
 
-	rootCmd.Flags().StringVarP(&conf.AppErrorLogFile, "error", "e", config.DefaultAppErrorLogFile, "path to the error log file")
 	rootCmd.Flags().StringVarP(&conf.LogFilePath, "path", "p", config.DefaultLogFilePath, "path to the log file to monitor traffic from")
 	rootCmd.Flags().DurationVarP(&conf.UpdateFrameDuration, "update", "u", config.DefaultUpdateFrameDuration, "app's refresh rate - rate at which data are going to be fetched and displayed")
 	rootCmd.Flags().DurationVarP(&conf.AlertFrameDuration, "alert-period", "T", config.DefaultAlertFrameDuration, "configure alerts' monitoring interval - if the request-rate is above it fro -T, an alert is given")

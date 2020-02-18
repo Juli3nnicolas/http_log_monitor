@@ -274,12 +274,7 @@ func updateTextWidget(w *text.Text, msg string) error {
 }
 
 // LogUpdateError writes errors to path
-func LogUpdateError(path string) func(error) {
-	if path == "" {
-		path = "/var/log/http_log_monitor/renderupdate.log"
-	}
-
-	l := logger.New()
-	errLog := func(err error) { l.Errorf(err.Error()) }
+func LogUpdateError() func(error) {
+	errLog := func(err error) { logger.Get().Errorf(err.Error()) }
 	return errLog
 }

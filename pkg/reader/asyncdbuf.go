@@ -2,6 +2,7 @@ package reader
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/Juli3nnicolas/http_log_monitor/pkg/log"
 )
@@ -21,7 +22,7 @@ type ASyncDBuf struct {
 // 1st param : path to file to read
 // 2nd param : a reader.Parser function, used to fill the buffer with log.Info data
 func (o *ASyncDBuf) Open(args ...interface{}) error {
-	if len(args) != 2 {
+	if len(args) != 3 {
 		return fmt.Errorf("wrong parameter number")
 	}
 
@@ -35,10 +36,15 @@ func (o *ASyncDBuf) Open(args ...interface{}) error {
 		return fmt.Errorf("second parameter should be a reader.Parser")
 	}
 
+	timeout, ok := args[2].(time.Duration)
+	if !ok {
+		return fmt.Errorf("invalid type - timeout must be a time.Duration argument")
+	}
+
 	fileReader := Tail{Parse: parser}
 	o.reader.Reader = &fileReader
 
-	err := o.reader.Open(path)
+	err := o.reader.Open(path, timeout)
 	if err != nil {
 		return err
 	}

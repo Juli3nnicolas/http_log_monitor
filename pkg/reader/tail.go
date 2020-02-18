@@ -5,7 +5,6 @@ import (
 	"io"
 	"time"
 
-	"github.com/Juli3nnicolas/http_log_monitor/pkg/config"
 	"github.com/Juli3nnicolas/http_log_monitor/pkg/log"
 	"github.com/papertrail/go-tail/follower"
 )
@@ -13,20 +12,27 @@ import (
 // Tail is a reader able to read an entire file content and seemlessly return file
 // updates
 type Tail struct {
-	tailer *follower.Follower
-	Parse  Parser
+	timeout time.Duration
+	tailer  *follower.Follower
+	Parse   Parser
 }
 
 // Open opens a file in read mode
-func (r *Tail) Open(path ...interface{}) error {
-	if len(path) != 1 {
+func (r *Tail) Open(args ...interface{}) error {
+	if len(args) != 2 {
 		return fmt.Errorf("wrong argument number")
 	}
 
-	p, ok := path[0].(string)
+	p, ok := args[0].(string)
 	if !ok {
 		return fmt.Errorf("invalid type - path must be a string")
 	}
+
+	timeout, ok := args[1].(time.Duration)
+	if !ok {
+		return fmt.Errorf("invalid type - timeout must be a time.Duration argument")
+	}
+	r.timeout = timeout
 
 	t, err := follower.New(p, follower.Config{
 		Whence: io.SeekEnd,
@@ -53,8 +59,7 @@ func (r *Tail) Read() ([]log.Info, error) {
 	case line := <-r.tailer.Lines():
 		return r.parseLine(line)
 
-	// TODO : Remove this value, it should be injected from open
-	case <-time.After(config.DefaultUpdateFrameDuration):
+	case <-time.After(r.timeout):
 		return nil, nil
 	}
 }

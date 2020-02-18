@@ -79,7 +79,7 @@ func (r *Async) read() {
 			output, err := r.Reader.Read()
 			if err != nil {
 				r.err = err
-				logger.New().Errorln(err)
+				logger.Get().Errorln(err)
 				continue
 			}
 			if output != nil {
