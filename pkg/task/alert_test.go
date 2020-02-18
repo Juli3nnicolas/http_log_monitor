@@ -11,6 +11,8 @@ import (
 
 func TestRunTurnTheAlertOnAndOffCorrectly(t *testing.T) {
 	// Setup stage
+	const frameDuration time.Duration = time.Second
+
 	alert := Alert{}
 	if err := alert.Init(time.Second, uint64(4)); err != nil {
 		panic(err)
@@ -23,7 +25,8 @@ func TestRunTurnTheAlertOnAndOffCorrectly(t *testing.T) {
 
 	alertOn := Rates{
 		Frame: FrameRates{
-			ReqPerS: 5,
+			Duration: uint64(frameDuration.Seconds()),
+			ReqPerS:  5,
 		},
 	}
 	alertOff := Rates{
@@ -41,7 +44,7 @@ func TestRunTurnTheAlertOnAndOffCorrectly(t *testing.T) {
 
 			// Returns now at first call then always now + 1 sec
 			return func() time.Time {
-				*pnow = pnow.Add(*iptr * time.Second)
+				*pnow = pnow.Add(*iptr * frameDuration)
 				*iptr = 1
 				return *pnow
 			}
@@ -57,6 +60,7 @@ func TestRunTurnTheAlertOnAndOffCorrectly(t *testing.T) {
 	res := alert.Result()
 	assert.False(t, res.IsOn)
 	assert.Equal(t, uint64(0), res.Avg)
+	assert.Equal(t, uint64(0), res.NbReqs)
 	assert.Equal(t, time.Time{}, res.Date)
 
 	// A second has elapsed, with 5 other requests
@@ -68,6 +72,7 @@ func TestRunTurnTheAlertOnAndOffCorrectly(t *testing.T) {
 	tAlertOn := now
 	assert.True(t, res.IsOn)
 	assert.Equal(t, alertOn.Frame.ReqPerS, res.Avg)
+	assert.Equal(t, alertOn.Frame.ReqPerS, res.NbReqs)
 	assert.Equal(t, tAlertOn, res.Date)
 
 	// Another second elapse, now the request rate dived to 2 req/s
@@ -78,13 +83,17 @@ func TestRunTurnTheAlertOnAndOffCorrectly(t *testing.T) {
 	tAlertOff := now
 	assert.False(t, res.IsOn)
 	assert.Equal(t, uint64(0), res.Avg)
+	assert.Equal(t, uint64(0), res.NbReqs)
 	assert.Equal(t, tAlertOff, res.Date)
 }
 
 func TestRunTurnTheAlertOnAndOffCorrectlyWithMeasuresSpanningOnTwoTimeFrames(t *testing.T) {
 	// Setup stage
+	const duration time.Duration = 2 * time.Minute
+	const frameDuration time.Duration = time.Minute
+
 	alert := Alert{}
-	if err := alert.Init(2*time.Minute, uint64(10)); err != nil {
+	if err := alert.Init(duration, uint64(10)); err != nil {
 		panic(err)
 	}
 
@@ -95,7 +104,8 @@ func TestRunTurnTheAlertOnAndOffCorrectlyWithMeasuresSpanningOnTwoTimeFrames(t *
 
 	alertOn := Rates{
 		Frame: FrameRates{
-			ReqPerS: 15,
+			Duration: uint64(frameDuration.Seconds()),
+			ReqPerS:  15,
 		},
 	}
 	alertOff := Rates{
@@ -113,7 +123,7 @@ func TestRunTurnTheAlertOnAndOffCorrectlyWithMeasuresSpanningOnTwoTimeFrames(t *
 
 			// Returns now at first call then always now + 1 sec
 			return func() time.Time {
-				*pnow = pnow.Add(*iptr * time.Minute)
+				*pnow = pnow.Add(*iptr * frameDuration)
 				*iptr = 1
 				return *pnow
 			}
@@ -122,25 +132,27 @@ func TestRunTurnTheAlertOnAndOffCorrectlyWithMeasuresSpanningOnTwoTimeFrames(t *
 
 	// Exercise & validation stages
 
-	// 15 requests at t = 0s, the alert is not activated as the
+	// 15 requests/s at t = 0s, the alert is not activated as the
 	// average req/s must be above 10 req/s for 2 minutes
 	err := alert.Run(alertOn, ti)
 	assert.Nil(t, err)
 	res := alert.Result()
 	assert.False(t, res.IsOn)
 	assert.Equal(t, uint64(0), res.Avg)
+	assert.Equal(t, uint64(0), res.NbReqs)
 	assert.Equal(t, time.Time{}, res.Date)
 
-	// A minute has elapsed, with 15 other requests
+	// A minute has elapsed, with 15 other requests/s
 	// The two minutes haven't elapsed so the alert is not switched on
 	err = alert.Run(alertOn, ti)
 	assert.Nil(t, err)
 	res = alert.Result()
 	assert.False(t, res.IsOn)
 	assert.Equal(t, uint64(0), res.Avg)
+	assert.Equal(t, uint64(0), res.NbReqs)
 	assert.Equal(t, time.Time{}, res.Date)
 
-	// Another minute has elapsed now totalling 2 minutes with 15 other requests
+	// Another minute has elapsed now totalling 2 minutes with 15 other requests/s
 	// The average on 2 minutes is therefore of 15 req/s > 10 req/s
 	// So the alert is switched on
 	err = alert.Run(alertOn, ti)
@@ -149,6 +161,7 @@ func TestRunTurnTheAlertOnAndOffCorrectlyWithMeasuresSpanningOnTwoTimeFrames(t *
 	tAlertOn := now
 	assert.True(t, res.IsOn)
 	assert.Equal(t, alertOn.Frame.ReqPerS, res.Avg)
+	assert.Equal(t, int(alertOn.Frame.ReqPerS*uint64(duration.Seconds())), int(res.NbReqs))
 	assert.Equal(t, tAlertOn, res.Date)
 
 	// A minute has elapsed in the new time-frame with request rate diving to 2 req/s
@@ -158,6 +171,8 @@ func TestRunTurnTheAlertOnAndOffCorrectlyWithMeasuresSpanningOnTwoTimeFrames(t *
 	res = alert.Result()
 	assert.True(t, res.IsOn)
 	assert.Equal(t, alertOn.Frame.ReqPerS, res.Avg)
+	assert.Equal(t, int(alertOn.Frame.ReqPerS*uint64(duration.Seconds())), int(res.NbReqs))
+	//assert.Equal(t, int(alertOn.Frame.ReqPerS*uint64(duration.Seconds())), int(res.NbReqs))
 	assert.Equal(t, tAlertOn, res.Date)
 
 	// The missing minute has passed with another rate of 2 req/s
@@ -167,6 +182,7 @@ func TestRunTurnTheAlertOnAndOffCorrectlyWithMeasuresSpanningOnTwoTimeFrames(t *
 	res = alert.Result()
 	tAlertOff := now
 	assert.False(t, res.IsOn)
-	assert.Equal(t, uint64(0), res.Avg)
+	assert.Equal(t, 0, int(res.Avg))
+	assert.Equal(t, 0, int(res.NbReqs))
 	assert.Equal(t, tAlertOff, res.Date)
 }

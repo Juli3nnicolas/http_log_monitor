@@ -27,6 +27,10 @@ type Alert struct {
 	nbMeasures uint64
 	// threshold value, above the alert is triggered
 	threshold uint64
+	// nbReqs is the number of requests that occured during a duration period
+	nbReqs float64
+	// done is true if the task has finished measuring for the current frame
+	done bool
 	// alert's current state
 	state AlertState
 }
@@ -38,6 +42,8 @@ type AlertState struct {
 	IsOn bool
 	// Avg is the average req/s the alert was triggered at (always 0 if IsOn)
 	Avg uint64
+	// NbReqs is number of requests that triggered the alert. Always equals 0 when IsOn == false
+	NbReqs uint64
 	// Date is the time the alert has been switched on or off. It has a default value
 	// in case the alert has never been activated.
 	Date time.Time
@@ -74,6 +80,7 @@ func (o *Alert) Init(args ...interface{}) error {
 
 // BeforeRun inits the monitoring timer for the first time-slice
 func (o *Alert) BeforeRun() error {
+	o.done = false
 	// If the alert monitoring hasn't started, then init the chrono
 	if o.start.Unix() == (time.Time{}).Unix() {
 		o.start = time.Now()
@@ -106,27 +113,37 @@ func (o *Alert) Run(args ...interface{}) error {
 	}
 
 	now := t.Now()
+
+	// floats are used to be sure to work out the exact
 	o.avgReq = (o.avgReq*o.nbMeasures + rates.Frame.ReqPerS) / (o.nbMeasures + 1)
 	o.nbMeasures++
+
+	// Count ongoing requests in current time-frame
+	currentNbReqs := float64(rates.Frame.ReqPerS) * float64(rates.Frame.Duration)
+	o.nbReqs += currentNbReqs
 
 	if now.Sub(o.start) >= o.duration {
 		if !o.state.IsOn && o.avgReq >= o.threshold {
 			o.state.IsOn = true
 			o.state.Date = now
+			o.state.NbReqs = uint64(o.nbReqs - currentNbReqs)
 			o.state.Avg = o.avgReq
 		}
 
 		if o.state.IsOn && o.avgReq < o.threshold {
 			o.state.IsOn = false
 			o.state.Date = now
-			o.state.Avg = uint64(0)
+			o.state.NbReqs = 0
+			o.state.Avg = 0
 		}
 
 		// Restart a new monitoring process
 		o.start = now
 		o.avgReq = 0
 		o.nbMeasures = 0
+		o.nbReqs = 0
 	}
+	o.done = true
 
 	return nil
 }
