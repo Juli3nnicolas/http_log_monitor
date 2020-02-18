@@ -13,7 +13,7 @@ const (
 	alertOnMessageFormat        string = "High traffic generated an alert - hits = %d, triggered at %v"
 	alertOffMessageFormat       string = "Traffic is back to normal - recovery time is %v"
 	rateMsgHeader               string = "Frame: "
-	rateMsgFormat               string = rateMsgHeader + "%d s Max: %d req/s Avg: %d req/s Success: %d Failure: %d"
+	rateMsgFormat               string = rateMsgHeader + "%ds Max: %d req/s Avg: %d req/s Success: %d Failure: %d"
 	mostHitsNoTraffic           string = "No traffic"
 	httpCodes100Header          string = "100:\n"
 	httpCodes200Header          string = "200:\n"
