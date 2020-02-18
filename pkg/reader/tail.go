@@ -29,7 +29,7 @@ func (r *Tail) Open(path ...interface{}) error {
 	}
 
 	t, err := follower.New(p, follower.Config{
-		Whence: io.SeekStart,
+		Whence: io.SeekEnd,
 		Offset: 0,
 		Reopen: true,
 	})
