@@ -209,23 +209,6 @@ func gridLayout(w *widgets) ([]container.Option, error) {
 	return gridOpts, nil
 }
 
-// periodic executes the provided closure periodically every interval.
-// Exits when the context expires.
-func periodic(ctx context.Context, interval time.Duration, fn func() error) {
-	ticker := time.NewTicker(interval)
-	defer ticker.Stop()
-	for {
-		select {
-		case <-ticker.C:
-			if err := fn(); err != nil {
-				panic(err)
-			}
-		case <-ctx.Done():
-			return
-		}
-	}
-}
-
 // newBarChart returns a BarcChart that displays random values on multiple bars.
 func newBarChart(ctx context.Context) (*barchart.BarChart, error) {
 	bc, err := barchart.New(
