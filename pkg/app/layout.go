@@ -102,21 +102,14 @@ func newWidgets(ctx context.Context, c *container.Container) (*widgets, error) {
 func gridLayout(w *widgets) ([]container.Option, error) {
 	builder := grid.New()
 	builder.Add(
-		grid.RowHeightPercWithOpts(10,
-			[]container.Option{
+		grid.RowHeightPerc(8,
+			grid.Widget(w.alertMessage,
 				container.Border(linestyle.Light),
 				container.BorderTitle("Alert:"),
 				container.BorderTitleAlignLeft(),
-			},
-			grid.ColWidthPerc(25,
-				grid.ColWidthPerc(99,
-					grid.Widget(w.alertMessage,
-						container.Border(linestyle.None),
-					),
-				),
 			),
 		),
-		grid.RowHeightPerc(90,
+		grid.RowHeightPerc(92,
 			grid.ColWidthPerc(70,
 				grid.RowHeightPerc(10,
 					grid.Widget(w.ratesMsg,
