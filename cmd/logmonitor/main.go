@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/Juli3nnicolas/http_log_monitor/pkg/app"
-	"github.com/Juli3nnicolas/http_log_monitor/pkg/config"
 	"github.com/spf13/cobra"
 )
 
@@ -23,9 +22,9 @@ present to be notified when traffic gets awry.`,
 		},
 	}
 
-	rootCmd.Flags().StringVarP(&conf.LogFilePath, "path", "p", config.DefaultLogFilePath, "path to the log file to monitor traffic from")
-	rootCmd.Flags().DurationVarP(&conf.UpdateFrameDuration, "update", "u", config.DefaultUpdateFrameDuration, "app's refresh rate - rate at which data are going to be fetched and displayed")
-	rootCmd.Flags().DurationVarP(&conf.AlertFrameDuration, "alert-period", "T", config.DefaultAlertFrameDuration, "configure alerts' monitoring interval - if the request-rate is above it fro -T, an alert is given")
-	rootCmd.Flags().Uint64VarP(&conf.AlertThreshold, "alert-threshold", "t", config.DefaultAlertThreshold, "threshold value, if the request rate is above for -T time, an alert is switched on")
+	rootCmd.Flags().StringVarP(&conf.LogFilePath, "path", "p", app.DefaultLogFilePath, "path to the log file to monitor traffic from")
+	rootCmd.Flags().DurationVarP(&conf.UpdateFrameDuration, "update", "u", app.DefaultUpdateFrameDuration, "app's refresh rate - rate at which data are going to be fetched and displayed")
+	rootCmd.Flags().DurationVarP(&conf.AlertFrameDuration, "alert-period", "T", app.DefaultAlertFrameDuration, "configure alerts' monitoring interval - if the request-rate is above it fro -T, an alert is given")
+	rootCmd.Flags().Uint64VarP(&conf.AlertThreshold, "alert-threshold", "t", app.DefaultAlertThreshold, "threshold value, if the request rate is above for -T time, an alert is switched on")
 	rootCmd.Execute()
 }
