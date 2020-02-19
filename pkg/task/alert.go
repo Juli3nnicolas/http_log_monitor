@@ -85,7 +85,7 @@ func (o *Alert) Init(args ...interface{}) error {
 }
 
 // BeforeRun inits the monitoring timer for the first time-slice
-func (o *Alert) BeforeRun() error {
+func (o *Alert) BeforeRun(...interface{}) error {
 	o.done = false
 	// If the alert monitoring hasn't started, then init the chrono
 	if o.start.Unix() == (time.Time{}).Unix() {

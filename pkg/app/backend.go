@@ -4,7 +4,6 @@ import (
 	"os"
 
 	"github.com/Juli3nnicolas/http_log_monitor/pkg/logger"
-	"github.com/Juli3nnicolas/http_log_monitor/pkg/reader"
 	"github.com/Juli3nnicolas/http_log_monitor/pkg/task"
 	"github.com/Juli3nnicolas/http_log_monitor/pkg/timer"
 )
@@ -16,6 +15,17 @@ type Backend struct {
 	rates      task.MeasureRates
 	countCodes task.CountErrorCodes
 	alert      task.Alert
+	tasks      []Taskenv
+}
+
+// Taskenv is a task and all its necessary environment to be executed
+type Taskenv struct {
+	Task       task.Task
+	InitParams []interface{}
+}
+
+func (b *Backend) add(tasks ...Taskenv) {
+	b.tasks = tasks
 }
 
 func (b *Backend) init(conf *Config) error {
@@ -26,30 +36,11 @@ func (b *Backend) init(conf *Config) error {
 	}
 	f.Close()
 
-	// Initialise the tasks
-	err = b.fetchLogs.Init(conf.LogFilePath, reader.CommonLogFormatParser(), conf.UpdateFrameDuration)
-	if err != nil {
-		return err
-	}
-
-	err = b.mostHits.Init()
-	if err != nil {
-		return err
-	}
-
-	err = b.rates.Init()
-	if err != nil {
-		return err
-	}
-
-	err = b.countCodes.Init()
-	if err != nil {
-		return err
-	}
-
-	err = b.alert.Init(conf.AlertFrameDuration, conf.AlertThreshold)
-	if err != nil {
-		return err
+	// Initialise all tasks
+	for _, t := range b.tasks {
+		if err := t.Task.Init(t.InitParams...); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -62,38 +53,18 @@ func (b *Backend) run(conf *Config, outputChan chan ViewFrame) {
 	t := &timer.Time{}
 	start := t.Now()
 	for {
-		err := b.fetchLogs.BeforeRun()
-		if err != nil {
-			l.Fatalf(err.Error())
-			return
+
+		for _, t := range b.tasks {
+			if err := t.Task.BeforeRun(); err != nil {
+				l.Fatalf(err.Error())
+				return
+			}
 		}
 
-		err = b.mostHits.BeforeRun()
-		if err != nil {
-			l.Fatalf(err.Error())
-			return
-		}
-
-		err = b.rates.BeforeRun()
-		if err != nil {
-			l.Fatalf(err.Error())
-			return
-		}
-
-		err = b.countCodes.BeforeRun()
-		if err != nil {
-			l.Fatalf(err.Error())
-			return
-		}
-
-		err = b.alert.BeforeRun()
-		if err != nil {
-			l.Fatalf(err.Error())
-			return
-		}
-
+		var err error
 		allDone := false
 		resultSent := false
+
 		for t.Now().Sub(start) < frame {
 			if !b.fetchLogs.IsDone() {
 				if err = b.fetchLogs.Run(); err != nil {
@@ -145,62 +116,21 @@ func (b *Backend) run(conf *Config, outputChan chan ViewFrame) {
 		}
 
 		start = t.Now()
-		err = b.fetchLogs.AfterRun()
-		if err != nil {
-			l.Fatalf(err.Error())
-			return
-		}
 
-		err = b.mostHits.AfterRun()
-		if err != nil {
-			l.Fatalf(err.Error())
-			return
-		}
-
-		err = b.rates.AfterRun()
-		if err != nil {
-			l.Fatalf(err.Error())
-			return
-		}
-
-		err = b.countCodes.AfterRun()
-		if err != nil {
-			l.Fatalf(err.Error())
-			return
-		}
-
-		err = b.alert.AfterRun()
-		if err != nil {
-			l.Fatalf(err.Error())
-			return
+		for _, t := range b.tasks {
+			if err := t.Task.AfterRun(); err != nil {
+				l.Fatalf(err.Error())
+				return
+			}
 		}
 	}
 }
 
 func (b *Backend) shutdown() error {
-	err := b.fetchLogs.Close()
-	if err != nil {
-		return err
-	}
-
-	err = b.mostHits.Close()
-	if err != nil {
-		return err
-	}
-
-	err = b.rates.Close()
-	if err != nil {
-		return err
-	}
-
-	err = b.countCodes.Close()
-	if err != nil {
-		return err
-	}
-
-	err = b.alert.Close()
-	if err != nil {
-		return err
+	for _, t := range b.tasks {
+		if err := t.Task.Close(); err != nil {
+			return err
+		}
 	}
 
 	return nil

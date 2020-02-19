@@ -40,7 +40,7 @@ func (o *MeasureRates) Init(args ...interface{}) error {
 }
 
 // BeforeRun flags the task as not done.
-func (o *MeasureRates) BeforeRun() error {
+func (o *MeasureRates) BeforeRun(...interface{}) error {
 	o.done = false
 
 	return nil

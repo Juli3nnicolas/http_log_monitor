@@ -36,7 +36,7 @@ func (o *FetchLogs) BeforeRun(args ...interface{}) error {
 // Run copies the files content to its internal buffer for sharing with other
 // tasks. The read content depends on time-frames' duration and the log-file's
 // writing-rate
-func (o *FetchLogs) Run() error {
+func (o *FetchLogs) Run(...interface{}) error {
 	var err error
 	o.logs, err = o.dbuf.Read()
 	if err != nil {

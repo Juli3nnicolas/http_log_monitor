@@ -19,7 +19,7 @@ func (o *CountErrorCodes) Init(args ...interface{}) error {
 }
 
 // BeforeRun flags the task as not done.
-func (o *CountErrorCodes) BeforeRun() error {
+func (o *CountErrorCodes) BeforeRun(...interface{}) error {
 	o.done = false
 	o.codes = make(map[uint32]uint64)
 

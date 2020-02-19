@@ -38,7 +38,7 @@ func (o *FindMostHitSections) Init(args ...interface{}) error {
 }
 
 // BeforeRun sets the task as not done. IsDone is going to return to false.
-func (o *FindMostHitSections) BeforeRun() error {
+func (o *FindMostHitSections) BeforeRun(...interface{}) error {
 	o.done = false
 
 	return nil
