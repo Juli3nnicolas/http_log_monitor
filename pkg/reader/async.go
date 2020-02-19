@@ -36,8 +36,8 @@ func (r *Async) Open(args ...interface{}) error {
 
 // Close stops reading data and closes Reader.
 func (r *Async) Close() {
-	r.Stop()
 	r.Reader.Close()
+	r.Stop()
 }
 
 // Read returns the content that has already been read. Call r.Start() to initiate the process.
