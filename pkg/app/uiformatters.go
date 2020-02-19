@@ -39,7 +39,7 @@ func formatAlertOnMsg(alert *task.AlertState) string {
 		fmt.Sprintf(
 			alertMessageHeader+" "+
 				alertOnMessageFormat,
-			alert.NbReqs, alert.Date)
+			alert.NbReqs, alert.Date.Local())
 }
 
 func formatAlertOffMsg(alert *task.AlertState) string {
@@ -47,7 +47,7 @@ func formatAlertOffMsg(alert *task.AlertState) string {
 		fmt.Sprintf(
 			alertMessageHeader+" "+
 				alertOffMessageFormat,
-			alert.Date)
+			alert.Date.Local())
 }
 
 func formatAlertInfoMsg(alert *task.AlertState) string {
