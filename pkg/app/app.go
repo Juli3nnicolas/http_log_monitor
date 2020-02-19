@@ -6,8 +6,16 @@ import (
 
 // Run executes the entire application (both frontend and backend)
 func Run(conf *Config) error {
+	l := logger.Get()
+
 	// Init backend
 	b := Backend{}
+	err := b.init(conf)
+	if err != nil {
+		l.Fatalf(err.Error())
+		return err
+	}
+	defer b.shutdown()
 
 	// Init view
 	r := renderer{}

@@ -1,6 +1,8 @@
 package app
 
 import (
+	"os"
+
 	"github.com/Juli3nnicolas/http_log_monitor/pkg/logger"
 	"github.com/Juli3nnicolas/http_log_monitor/pkg/reader"
 	"github.com/Juli3nnicolas/http_log_monitor/pkg/task"
@@ -8,6 +10,17 @@ import (
 )
 
 type Backend struct {
+}
+
+func (b *Backend) init(conf *Config) error {
+	// Create input log file if it doesn't exist
+	f, err := os.OpenFile(conf.LogFilePath, os.O_RDONLY|os.O_CREATE, 0644)
+	if err != nil {
+		return err
+	}
+	f.Close()
+
+	return nil
 }
 
 func (b *Backend) run(conf *Config, outputChan chan ViewFrame) {
