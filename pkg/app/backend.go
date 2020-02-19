@@ -9,7 +9,13 @@ import (
 	"github.com/Juli3nnicolas/http_log_monitor/pkg/timer"
 )
 
+// Backend is the structure that holds all task to have metrics displayed
 type Backend struct {
+	fetchLogs  task.FetchLogs
+	mostHits   task.FindMostHitSections
+	rates      task.MeasureRates
+	countCodes task.CountErrorCodes
+	alert      task.Alert
 }
 
 func (b *Backend) init(conf *Config) error {
@@ -20,76 +26,67 @@ func (b *Backend) init(conf *Config) error {
 	}
 	f.Close()
 
+	// Initialise the tasks
+	err = b.fetchLogs.Init(conf.LogFilePath, reader.CommonLogFormatParser(), conf.UpdateFrameDuration)
+	if err != nil {
+		return err
+	}
+
+	err = b.mostHits.Init()
+	if err != nil {
+		return err
+	}
+
+	err = b.rates.Init()
+	if err != nil {
+		return err
+	}
+
+	err = b.countCodes.Init()
+	if err != nil {
+		return err
+	}
+
+	err = b.alert.Init(conf.AlertFrameDuration, conf.AlertThreshold)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func (b *Backend) run(conf *Config, outputChan chan ViewFrame) {
 	l := logger.Get()
 
-	fetchLogs := task.FetchLogs{}
-	err := fetchLogs.Init(conf.LogFilePath, reader.CommonLogFormatParser(), conf.UpdateFrameDuration)
-	if err != nil {
-		l.Fatalf(err.Error())
-		return
-	}
-
-	mostHits := task.FindMostHitSections{}
-	err = mostHits.Init()
-	if err != nil {
-		l.Fatalf(err.Error())
-		return
-	}
-
-	rates := task.MeasureRates{}
-	err = rates.Init()
-	if err != nil {
-		l.Fatalf(err.Error())
-		return
-	}
-
-	countCodes := task.CountErrorCodes{}
-	err = countCodes.Init()
-	if err != nil {
-		l.Fatalf(err.Error())
-		return
-	}
-
-	alert := task.Alert{}
-	err = alert.Init(conf.AlertFrameDuration, conf.AlertThreshold)
-	if err != nil {
-		l.Fatalf(err.Error())
-		return
-	}
-
 	frame := conf.UpdateFrameDuration
 	t := &timer.Time{}
 	start := t.Now()
 	for {
-		err := fetchLogs.BeforeRun()
+		err := b.fetchLogs.BeforeRun()
 		if err != nil {
 			l.Fatalf(err.Error())
 			return
 		}
 
-		err = mostHits.BeforeRun()
+		err = b.mostHits.BeforeRun()
 		if err != nil {
 			l.Fatalf(err.Error())
 			return
 		}
 
-		err = rates.BeforeRun()
+		err = b.rates.BeforeRun()
 		if err != nil {
 			l.Fatalf(err.Error())
 			return
 		}
 
-		err = countCodes.BeforeRun()
+		err = b.countCodes.BeforeRun()
 		if err != nil {
 			l.Fatalf(err.Error())
 			return
 		}
 
-		err = alert.BeforeRun()
+		err = b.alert.BeforeRun()
 		if err != nil {
 			l.Fatalf(err.Error())
 			return
@@ -98,37 +95,37 @@ func (b *Backend) run(conf *Config, outputChan chan ViewFrame) {
 		allDone := false
 		resultSent := false
 		for t.Now().Sub(start) < frame {
-			if !fetchLogs.IsDone() {
-				if err = fetchLogs.Run(); err != nil {
+			if !b.fetchLogs.IsDone() {
+				if err = b.fetchLogs.Run(); err != nil {
 					l.Fatalf(err.Error())
 					return
 				}
 			}
-			logs := fetchLogs.Fetch()
+			logs := b.fetchLogs.Fetch()
 
-			if !mostHits.IsDone() {
-				if err = mostHits.Run(logs); err != nil {
-					l.Fatalf(err.Error())
-					return
-				}
-			}
-
-			if !rates.IsDone() {
-				if err = rates.Run(logs, uint64(frame.Seconds())); err != nil {
+			if !b.mostHits.IsDone() {
+				if err = b.mostHits.Run(logs); err != nil {
 					l.Fatalf(err.Error())
 					return
 				}
 			}
 
-			if !countCodes.IsDone() {
-				if err = countCodes.Run(logs); err != nil {
+			if !b.rates.IsDone() {
+				if err = b.rates.Run(logs, uint64(frame.Seconds())); err != nil {
 					l.Fatalf(err.Error())
 					return
 				}
 			}
 
-			if !alert.IsDone() && rates.IsDone() {
-				if err = alert.Run(rates.Result(), t); err != nil {
+			if !b.countCodes.IsDone() {
+				if err = b.countCodes.Run(logs); err != nil {
+					l.Fatalf(err.Error())
+					return
+				}
+			}
+
+			if !b.alert.IsDone() && b.rates.IsDone() {
+				if err = b.alert.Run(b.rates.Result(), t); err != nil {
 					l.Fatalf(err.Error())
 					return
 				}
@@ -137,10 +134,10 @@ func (b *Backend) run(conf *Config, outputChan chan ViewFrame) {
 
 			if allDone && !resultSent {
 				view := ViewFrame{
-					Hits:  mostHits.Result(),
-					Rates: rates.Result(),
-					Codes: countCodes.Result(),
-					Alert: alert.Result(),
+					Hits:  b.mostHits.Result(),
+					Rates: b.rates.Result(),
+					Codes: b.countCodes.Result(),
+					Alert: b.alert.Result(),
 				}
 				outputChan <- view
 				resultSent = true
@@ -148,69 +145,63 @@ func (b *Backend) run(conf *Config, outputChan chan ViewFrame) {
 		}
 
 		start = t.Now()
-		err = fetchLogs.AfterRun()
+		err = b.fetchLogs.AfterRun()
 		if err != nil {
 			l.Fatalf(err.Error())
 			return
 		}
 
-		err = mostHits.AfterRun()
+		err = b.mostHits.AfterRun()
 		if err != nil {
 			l.Fatalf(err.Error())
 			return
 		}
 
-		err = rates.AfterRun()
+		err = b.rates.AfterRun()
 		if err != nil {
 			l.Fatalf(err.Error())
 			return
 		}
 
-		err = countCodes.AfterRun()
+		err = b.countCodes.AfterRun()
 		if err != nil {
 			l.Fatalf(err.Error())
 			return
 		}
 
-		err = alert.AfterRun()
+		err = b.alert.AfterRun()
 		if err != nil {
 			l.Fatalf(err.Error())
 			return
 		}
-	}
-
-	err = fetchLogs.Close()
-	if err != nil {
-		l.Fatalf(err.Error())
-		return
-	}
-
-	err = mostHits.Close()
-	if err != nil {
-		l.Fatalf(err.Error())
-		return
-	}
-
-	err = rates.Close()
-	if err != nil {
-		l.Fatalf(err.Error())
-		return
-	}
-
-	err = countCodes.Close()
-	if err != nil {
-		l.Fatalf(err.Error())
-		return
-	}
-
-	err = alert.Close()
-	if err != nil {
-		l.Fatalf(err.Error())
-		return
 	}
 }
 
 func (b *Backend) shutdown() error {
+	err := b.fetchLogs.Close()
+	if err != nil {
+		return err
+	}
+
+	err = b.mostHits.Close()
+	if err != nil {
+		return err
+	}
+
+	err = b.rates.Close()
+	if err != nil {
+		return err
+	}
+
+	err = b.countCodes.Close()
+	if err != nil {
+		return err
+	}
+
+	err = b.alert.Close()
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

@@ -15,7 +15,11 @@ func Run(conf *Config) error {
 		l.Fatalf(err.Error())
 		return err
 	}
-	defer b.shutdown()
+	defer func() {
+		if err := b.shutdown(); err != nil {
+			logger.Get().Fatalf(err.Error())
+		}
+	}()
 
 	// Init view
 	r := renderer{}
