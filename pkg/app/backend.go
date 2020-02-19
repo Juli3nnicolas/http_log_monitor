@@ -2,6 +2,7 @@ package app
 
 import (
 	"os"
+	"time"
 
 	"github.com/Juli3nnicolas/http_log_monitor/pkg/logger"
 	"github.com/Juli3nnicolas/http_log_monitor/pkg/task"
@@ -48,10 +49,9 @@ func (b *Backend) init(conf *Config) error {
 
 func (b *Backend) run(conf *Config, outputChan chan ViewFrame) {
 	l := logger.Get()
-
-	frame := conf.UpdateFrameDuration
 	t := &timer.Time{}
 	start := t.Now()
+
 	for {
 
 		for _, t := range b.tasks {
@@ -61,60 +61,10 @@ func (b *Backend) run(conf *Config, outputChan chan ViewFrame) {
 			}
 		}
 
-		var err error
-		allDone := false
-		resultSent := false
-
-		for t.Now().Sub(start) < frame {
-			if !b.fetchLogs.IsDone() {
-				if err = b.fetchLogs.Run(); err != nil {
-					l.Fatalf(err.Error())
-					return
-				}
-			}
-			logs := b.fetchLogs.Fetch()
-
-			if !b.mostHits.IsDone() {
-				if err = b.mostHits.Run(logs); err != nil {
-					l.Fatalf(err.Error())
-					return
-				}
-			}
-
-			if !b.rates.IsDone() {
-				if err = b.rates.Run(logs, uint64(frame.Seconds())); err != nil {
-					l.Fatalf(err.Error())
-					return
-				}
-			}
-
-			if !b.countCodes.IsDone() {
-				if err = b.countCodes.Run(logs); err != nil {
-					l.Fatalf(err.Error())
-					return
-				}
-			}
-
-			if !b.alert.IsDone() && b.rates.IsDone() {
-				if err = b.alert.Run(b.rates.Result(), t); err != nil {
-					l.Fatalf(err.Error())
-					return
-				}
-				allDone = true
-			}
-
-			if allDone && !resultSent {
-				view := ViewFrame{
-					Hits:  b.mostHits.Result(),
-					Rates: b.rates.Result(),
-					Codes: b.countCodes.Result(),
-					Alert: b.alert.Result(),
-				}
-				outputChan <- view
-				resultSent = true
-			}
+		if err := b.runTasks(t, start, conf.UpdateFrameDuration, outputChan); err != nil {
+			l.Fatalf(err.Error())
+			return
 		}
-
 		start = t.Now()
 
 		for _, t := range b.tasks {
@@ -124,6 +74,59 @@ func (b *Backend) run(conf *Config, outputChan chan ViewFrame) {
 			}
 		}
 	}
+}
+
+func (b *Backend) runTasks(t *timer.Time, start time.Time, frame time.Duration, outputChan chan ViewFrame) error {
+	var err error
+	allDone := false
+	resultSent := false
+
+	for t.Now().Sub(start) < frame {
+		if !b.fetchLogs.IsDone() {
+			if err = b.fetchLogs.Run(); err != nil {
+				return err
+			}
+		}
+		logs := b.fetchLogs.Fetch()
+
+		if !b.mostHits.IsDone() {
+			if err = b.mostHits.Run(logs); err != nil {
+				return err
+			}
+		}
+
+		if !b.rates.IsDone() {
+			if err = b.rates.Run(logs, uint64(frame.Seconds())); err != nil {
+				return err
+			}
+		}
+
+		if !b.countCodes.IsDone() {
+			if err = b.countCodes.Run(logs); err != nil {
+				return err
+			}
+		}
+
+		if !b.alert.IsDone() && b.rates.IsDone() {
+			if err = b.alert.Run(b.rates.Result(), t); err != nil {
+				return err
+			}
+			allDone = true
+		}
+
+		if allDone && !resultSent {
+			view := ViewFrame{
+				Hits:  b.mostHits.Result(),
+				Rates: b.rates.Result(),
+				Codes: b.countCodes.Result(),
+				Alert: b.alert.Result(),
+			}
+			outputChan <- view
+			resultSent = true
+		}
+	}
+
+	return nil
 }
 
 func (b *Backend) shutdown() error {
