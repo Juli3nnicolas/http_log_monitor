@@ -18,20 +18,20 @@ type Rates struct {
 	Frame  FrameRates
 }
 
-// GlobalRates global mesures taking into account the whole log file
+// GlobalRates global measures taking into account the whole log file
 type GlobalRates struct {
-	AvgReqPerS uint64
-	nbMeasures uint64
-	MaxReqPerS uint64
+	AvgReqPerS uint64 // Average request per second since the app is on
+	nbMeasures uint64 // Total number of measures, used to compute AvgReqPerS
+	MaxReqPerS uint64 // Maximum number of requests since app startup
 }
 
 // FrameRates measures related to the current time-frame
 type FrameRates struct {
-	Duration   uint64 // frame's duration expressed in seconds
-	ReqPerS    uint64
-	NbRequests uint64
-	NbSuccess  uint64
-	NbFailures uint64
+	Duration   uint64 // Frame's duration expressed in seconds
+	ReqPerS    uint64 // Frame's request-rate (req/s)
+	NbRequests uint64 // Number of requests recorded during the frame's execution
+	NbSuccess  uint64 // Number of successful requests recorded during the frame's execution
+	NbFailures uint64 // Number of failed requests recorded during the frame's execution
 }
 
 // Init does nothing, implements the task interface

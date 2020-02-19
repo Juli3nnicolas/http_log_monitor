@@ -17,9 +17,9 @@ type FindMostHitSections struct {
 
 // Hit is a structure representing a request occurence in the log file.
 type Hit struct {
-	Section string
-	Total   uint64
-	Methods map[string]uint64
+	Section string            // URL section in /compute/create/..., compute is the section
+	Total   uint64            // number of section occurences
+	Methods map[string]uint64 // a map of method count (i.e. POSTcount := Methods["POST"])
 }
 
 // set is used to properly fill a Hit. It requires a url section and an HTTP method

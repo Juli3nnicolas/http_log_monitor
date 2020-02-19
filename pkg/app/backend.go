@@ -14,7 +14,7 @@ type Backend struct {
 	fetchLogs  task.FetchLogs
 	mostHits   task.FindMostHitSections
 	rates      task.MeasureRates
-	countCodes task.CountErrorCodes
+	countCodes task.CountHTTPCodes
 	alert      task.Alert
 	tasks      []Taskenv
 }
