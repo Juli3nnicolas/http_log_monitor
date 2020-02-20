@@ -457,29 +457,29 @@ The log file must be formatted with <a href="https://www.w3.org/Daemon/User/Conf
 <h2 id="getting-started">Getting started</h2>
 <h3 id="run-the-app-locally">Run the app locally</h3>
 <p>To read the documentation:</p>
-<pre class="hljs"><code><div>// Log monitor
-go run cmd/logmonitor/main.go --help
+<pre class="hljs"><code><div><span class="hljs-comment"># Log monitor</span>
+go run cmd/logmonitor/main.go --<span class="hljs-built_in">help</span>
 
-// Log writter
-go run cmd/writelog/main.go --help
+<span class="hljs-comment"># Log writter</span>
+go run cmd/writelog/main.go --<span class="hljs-built_in">help</span>
 </div></code></pre>
 <p>To run the test with the default parameters specified in the email please type the following commands:</p>
 <pre class="hljs"><code><div>go run cmd/logmonitor/main.go
 
-# Run from another shell to write logs to the file
+<span class="hljs-comment"># Run from another shell to write logs to the file</span>
 go run cmd/writelog/main.go --lines=3000 --duration=180 --path=/tmp/access.log
 </div></code></pre>
 <p><em>Quit the app using</em> <code>ESC</code> or <code>CTRL C</code></p>
 <p>To run the test with custom parameters:</p>
 <pre class="hljs"><code><div>go run cmd/logmonitor/main.go --path=/tmp/foo.log --update=1s --alert-period=1s --alert-threshold=5
 
-# Run from another shell to write logs to the file
+<span class="hljs-comment"># Run from another shell to write logs to the file</span>
 go run cmd/writelog/main.go --lines=20 --duration=1 --path=/tmp/foo.log
 </div></code></pre>
 <p><em>Quit the app using</em> <code>ESC</code> or <code>CTRL C</code></p>
 <h3 id="run-with-docker">Run with docker</h3>
 <h3 id="run-the-tests">Run the tests</h3>
-<pre class="hljs"><code><div>go test ./...
+<pre class="hljs"><code><div>go <span class="hljs-built_in">test</span> ./...
 </div></code></pre>
 <p>To have more information on the alert-specific tests please read the file <code>pkg/task/alert_test.go</code>.</p>
 <h2 id="improvements">Improvements</h2>
@@ -554,11 +554,11 @@ been made into an interface but I did not need it at the time) to control its ex
 the background in a separate goroutine to allow for seemless updates.</p>
 <p>Before passing to the next package description, let's talk about the <code>add</code> method. The backend stores a list of <code>task.Task</code> interface to automate
 task execution and bring flexibility into the app's configuration. Please find below add's signature and a more detailed description of its action :</p>
-<pre class="hljs"><code><div>func (b *Backend) add(tasks ...Taskenv)
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(b *Backend)</span> <span class="hljs-title">add</span><span class="hljs-params">(tasks ...Taskenv)</span></span>
 
-type Taskenv struct {
+<span class="hljs-keyword">type</span> Taskenv <span class="hljs-keyword">struct</span> {
     Task        task.Task
-    InitParams  []interface{}
+    InitParams  []<span class="hljs-keyword">interface</span>{}
 }
 </div></code></pre>
 <p>This architecture allows to define in the main (or from a config file... not implemented though) a list of tasks to be loaded by the backend and then executed.
@@ -568,7 +568,7 @@ time is lacking and they are more complex to support. Also, task dependency woul
 <pre class="hljs"><code><div>b.add(
 		Taskenv{
 			Task:       &amp;fetchLogs,
-			InitParams: []interface{}{conf.LogFilePath, reader.CommonLogFormatParser(), conf.UpdateFrameDuration},
+			InitParams: []<span class="hljs-keyword">interface</span>{}{conf.LogFilePath, reader.CommonLogFormatParser(), conf.UpdateFrameDuration},
 		},
 		Taskenv{
 			Task: &amp;mostHits,
@@ -581,14 +581,14 @@ time is lacking and they are more complex to support. Also, task dependency woul
 		},
 		Taskenv{
 			Task:       &amp;alert,
-			InitParams: []interface{}{conf.AlertFrameDuration, conf.AlertThreshold},
+			InitParams: []<span class="hljs-keyword">interface</span>{}{conf.AlertFrameDuration, conf.AlertThreshold},
 		},
 	)
 </div></code></pre>
 <p>Then backend's <code>init</code> can do the following :</p>
-<pre class="hljs"><code><div>for _, t := b.tasks {
-    if err := t.Task.Init(t.InitParams...); err != nil {
-        return err
+<pre class="hljs"><code><div><span class="hljs-keyword">for</span> _, t := b.tasks {
+    <span class="hljs-keyword">if</span> err := t.Task.Init(t.InitParams...); err != <span class="hljs-literal">nil</span> {
+        <span class="hljs-keyword">return</span> err
     }
 }
 </div></code></pre>
@@ -597,26 +597,26 @@ time is lacking and they are more complex to support. Also, task dependency woul
 <p>The task package contains all tasks executed by the backend. A task's role is to work out metrics then usable by the rest of the app. Tasks are made to be executed
 independently. Although there is one example that reuses the result of a previous task. This action could be avoided however by recomputing necessary data.</p>
 <p>All tasks implement a common interface whose description can be found below :</p>
-<pre class="hljs"><code><div>type Task interface {
-	// Init sets up the task. Think of it as a constructor.
-	Init(...interface{}) error
+<pre class="hljs"><code><div><span class="hljs-keyword">type</span> Task <span class="hljs-keyword">interface</span> {
+	<span class="hljs-comment">// Init sets up the task. Think of it as a constructor.</span>
+	Init(...<span class="hljs-keyword">interface</span>{}) error
 
-	// BeforeRun sets some data before the task is run. Remember that
-	// a task can be executed several times, accross several time frames.
-	// This function and AfterRun is there to setup/cleanup the task's state
-	// in case a long iterative work is planned
-	BeforeRun(...interface{}) error
+	<span class="hljs-comment">// BeforeRun sets some data before the task is run. Remember that</span>
+	<span class="hljs-comment">// a task can be executed several times, accross several time frames.</span>
+	<span class="hljs-comment">// This function and AfterRun is there to setup/cleanup the task's state</span>
+	<span class="hljs-comment">// in case a long iterative work is planned</span>
+	BeforeRun(...<span class="hljs-keyword">interface</span>{}) error
 
-	// Run executes the task
-	Run(...interface{}) error
+	<span class="hljs-comment">// Run executes the task</span>
+	Run(...<span class="hljs-keyword">interface</span>{}) error
 
-	// AfterRun like BeforeRun except it is called after Run has been executed
+	<span class="hljs-comment">// AfterRun like BeforeRun except it is called after Run has been executed</span>
 	AfterRun() error
 
-	// IsDone is true if the task's work has been completed
-	IsDone() bool
+	<span class="hljs-comment">// IsDone is true if the task's work has been completed</span>
+	IsDone() <span class="hljs-keyword">bool</span>
 
-	// Close shutdowns the task. Call Init to use it again
+	<span class="hljs-comment">// Close shutdowns the task. Call Init to use it again</span>
 	Close() error
 }
 </div></code></pre>
@@ -629,11 +629,11 @@ the frame is over, all tasks stop their action and the <code>fetch log task</cod
 It is worth pointing out that, in addition to the double buffering technique, this task is always one frame ahead of the others. That is how concurrency is avoided <code>without using a mutex</code>.</p>
 <h5 id="most-hit-sections">Most hit sections</h5>
 <p>This task reads the log provided by <code>fetch logs</code>, indexes them by sections (using a map) then counts the section occurence and the HTTP request (<code>GET</code>, <code>POST</code>...) occurences. The result of this task is the following :</p>
-<pre class="hljs"><code><div>// The task returns a slice of Hits
-type Hit struct {
-	Section string            // URL section in /compute/create/..., compute is the section
-	Total   uint64            // number of section occurences
-	Methods map[string]uint64 // a map of method count (i.e. POSTcount := Methods[&quot;POST&quot;])
+<pre class="hljs"><code><div><span class="hljs-comment">// The task returns a slice of Hits</span>
+<span class="hljs-keyword">type</span> Hit <span class="hljs-keyword">struct</span> {
+	Section <span class="hljs-keyword">string</span>            <span class="hljs-comment">// URL section in /compute/create/..., compute is the section</span>
+	Total   <span class="hljs-keyword">uint64</span>            <span class="hljs-comment">// number of section occurences</span>
+	Methods <span class="hljs-keyword">map</span>[<span class="hljs-keyword">string</span>]<span class="hljs-keyword">uint64</span> <span class="hljs-comment">// a map of method count (i.e. POSTcount := Methods["POST"])</span>
 }
 </div></code></pre>
 <h4 id="count-codes">Count codes</h4>
@@ -646,50 +646,50 @@ average-request-rate is computed on a custom <code>period</code> of time (it als
 <p>Implementation-wise I reused the results from <code>measure rates</code> task. It introduces a dependency between the two tasks and could be avoided by making alerts recompute
 all the values it needs (the second option being more CPU, RAM and time consumming but can be totally parallelised).</p>
 <p>Here is an alert result:</p>
-<pre class="hljs"><code><div>type AlertState struct {
-	// IsOn is true when the alert is active.
-	// It is false if there wasn't any alert or the system recovered
-	IsOn bool
+<pre class="hljs"><code><div><span class="hljs-keyword">type</span> AlertState <span class="hljs-keyword">struct</span> {
+	<span class="hljs-comment">// IsOn is true when the alert is active.</span>
+	<span class="hljs-comment">// It is false if there wasn't any alert or the system recovered</span>
+	IsOn <span class="hljs-keyword">bool</span>
 
-	// Duration is the time spent to check the alert, and the time it takes to cool down
+	<span class="hljs-comment">// Duration is the time spent to check the alert, and the time it takes to cool down</span>
 	Duration time.Duration
 
-	// Threshold is the value triggering the alert if the average rate is greater on a whole Duration-period
-	Threshold uint64
+	<span class="hljs-comment">// Threshold is the value triggering the alert if the average rate is greater on a whole Duration-period</span>
+	Threshold <span class="hljs-keyword">uint64</span>
 
-	// Avg is the average req/s the alert was triggered at (always 0 if IsOn)
-	Avg uint64
+	<span class="hljs-comment">// Avg is the average req/s the alert was triggered at (always 0 if IsOn)</span>
+	Avg <span class="hljs-keyword">uint64</span>
 
-	// NbReqs is number of requests that triggered the alert. Always equals 0 when IsOn == false
-	NbReqs uint64
+	<span class="hljs-comment">// NbReqs is number of requests that triggered the alert. Always equals 0 when IsOn == false</span>
+	NbReqs <span class="hljs-keyword">uint64</span>
 
-	// Date is the time the alert has been switched on or off. It has a default value
-	// in case the alert has never been activated.
+	<span class="hljs-comment">// Date is the time the alert has been switched on or off. It has a default value</span>
+	<span class="hljs-comment">// in case the alert has never been activated.</span>
 	Date time.Time
 }
 </div></code></pre>
 <h4 id="measure-rates">Measure rates</h4>
 <p>This task measures all the traffic-related data. It measures them considering a per-frame basis and a global-basis (whole app execution). Before focusing on the
 implementation description, let's describe what data is output:</p>
-<pre class="hljs"><code><div>// Rates contains all type of rates and measures taken by the task
-type Rates struct {
+<pre class="hljs"><code><div><span class="hljs-comment">// Rates contains all type of rates and measures taken by the task</span>
+<span class="hljs-keyword">type</span> Rates <span class="hljs-keyword">struct</span> {
 	Global GlobalRates
 	Frame  FrameRates
 }
 
-// GlobalRates global measures taking into account the whole log file
-type GlobalRates struct {
-	AvgReqPerS uint64 // Average request per second since the app is on
-	MaxReqPerS uint64 // Maximum number of requests since app startup
+<span class="hljs-comment">// GlobalRates global measures taking into account the whole log file</span>
+<span class="hljs-keyword">type</span> GlobalRates <span class="hljs-keyword">struct</span> {
+	AvgReqPerS <span class="hljs-keyword">uint64</span> <span class="hljs-comment">// Average request per second since the app is on</span>
+	MaxReqPerS <span class="hljs-keyword">uint64</span> <span class="hljs-comment">// Maximum number of requests since app startup</span>
 }
 
-// FrameRates measures related to the current time-frame
-type FrameRates struct {
-	Duration   uint64 // Frame's duration expressed in seconds
-	ReqPerS    uint64 // Frame's request-rate (req/s)
-	NbRequests uint64 // Number of requests recorded during the frame's execution
-	NbSuccess  uint64 // Number of successful requests recorded during the frame's execution
-	NbFailures uint64 // Number of failed requests recorded during the frame's execution
+<span class="hljs-comment">// FrameRates measures related to the current time-frame</span>
+<span class="hljs-keyword">type</span> FrameRates <span class="hljs-keyword">struct</span> {
+	Duration   <span class="hljs-keyword">uint64</span> <span class="hljs-comment">// Frame's duration expressed in seconds</span>
+	ReqPerS    <span class="hljs-keyword">uint64</span> <span class="hljs-comment">// Frame's request-rate (req/s)</span>
+	NbRequests <span class="hljs-keyword">uint64</span> <span class="hljs-comment">// Number of requests recorded during the frame's execution</span>
+	NbSuccess  <span class="hljs-keyword">uint64</span> <span class="hljs-comment">// Number of successful requests recorded during the frame's execution</span>
+	NbFailures <span class="hljs-keyword">uint64</span> <span class="hljs-comment">// Number of failed requests recorded during the frame's execution</span>
 }
 </div></code></pre>
 <p>Frame rates (for example the request-rate in a single time-frame) are measured using writing rate in the log file, not by reading the actual request time.
@@ -709,13 +709,13 @@ for debugging so it wouldn't be the favoured method.</p>
 <p>This package contains input stream readers. They are used and combined to be able to load logs efficiently and asynchronously.</p>
 <p>This package defines a <code>Reader</code> interface. It is then used by all the readers to combine their behaviour using composition. This whole
 package follow the <code>IOC</code> principle (<code>Invertion Of Control</code>).</p>
-<pre class="hljs"><code><div>// Reader is an interface to read data
-type Reader interface {
-	// Open prepares an object for reading
-	Open(...interface{}) error
-	// Read reads the object content and returns formatted logs if any
+<pre class="hljs"><code><div><span class="hljs-comment">// Reader is an interface to read data</span>
+<span class="hljs-keyword">type</span> Reader <span class="hljs-keyword">interface</span> {
+	<span class="hljs-comment">// Open prepares an object for reading</span>
+	Open(...<span class="hljs-keyword">interface</span>{}) error
+	<span class="hljs-comment">// Read reads the object content and returns formatted logs if any</span>
 	Read() ([]log.Info, error)
-	// Close closes the object and all resources used for reading the file
+	<span class="hljs-comment">// Close closes the object and all resources used for reading the file</span>
 	Close()
 }
 </div></code></pre>
@@ -733,19 +733,19 @@ paid when calling it (call <code>Stop</code> before).</p>
 <p>For instance, this is how it's done to have a File reader reading asynchronously (errors are ignored for the sake of simplicity):</p>
 <pre class="hljs"><code><div>async := reader.Async{}
 async.Reader = &amp;reader.File{}
-async.Init(&quot;/tmp/access.log&quot;)
+async.Init(<span class="hljs-string">"/tmp/access.log"</span>)
 
 async.Start()
-// .. Do something long while it's reading
+<span class="hljs-comment">// .. Do something long while it's reading</span>
 async.Stop()
 
-// The reading process has been stopped so it's OK to read the values
+<span class="hljs-comment">// The reading process has been stopped so it's OK to read the values</span>
 log := async.Read()
 
-// Resume reading
+<span class="hljs-comment">// Resume reading</span>
 async.Start()
 
-// Close makes sure the reader is stopped
+<span class="hljs-comment">// Close makes sure the reader is stopped</span>
 async.Close()
 </div></code></pre>
 <h5 id="async-dbuf-reader">Async dbuf reader</h5>

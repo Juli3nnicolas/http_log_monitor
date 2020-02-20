@@ -12,16 +12,16 @@ Its default behaviour is the following :
 ## Getting started
 ### Run the app locally
 To read the documentation:
-```
-// Log monitor
+```bash
+# Log monitor
 go run cmd/logmonitor/main.go --help
 
-// Log writter
+# Log writter
 go run cmd/writelog/main.go --help
 ```
 
 To run the test with the default parameters specified in the email please type the following commands:
-```
+```bash
 go run cmd/logmonitor/main.go
 
 # Run from another shell to write logs to the file
@@ -30,7 +30,7 @@ go run cmd/writelog/main.go --lines=3000 --duration=180 --path=/tmp/access.log
 *Quit the app using* `ESC` or `CTRL C`
 
 To run the test with custom parameters:
-```
+```bash
 go run cmd/logmonitor/main.go --path=/tmp/foo.log --update=1s --alert-period=1s --alert-threshold=5
 
 # Run from another shell to write logs to the file
@@ -41,7 +41,7 @@ go run cmd/writelog/main.go --lines=20 --duration=1 --path=/tmp/foo.log
 ### Run with docker
 
 ### Run the tests
-```
+```bash
 go test ./...
 ```
 
@@ -127,7 +127,7 @@ the background in a separate goroutine to allow for seemless updates.
 
 Before passing to the next package description, let's talk about the `add` method. The backend stores a list of `task.Task` interface to automate
 task execution and bring flexibility into the app's configuration. Please find below add's signature and a more detailed description of its action :
-```
+```go
 func (b *Backend) add(tasks ...Taskenv)
 
 type Taskenv struct {
@@ -140,7 +140,7 @@ The `InitParams` slice from `TaskEnv` is used to feed parameters in order to the
 time is lacking and they are more complex to support. Also, task dependency would require to be implemented to fully take advantage of this system.
 
 Before going on to the next description here is a simple call to define backend tasks for execution :
-```
+```go
 b.add(
 		Taskenv{
 			Task:       &fetchLogs,
@@ -163,7 +163,7 @@ b.add(
 ```
 
 Then backend's `init` can do the following :
-```
+```go
 for _, t := b.tasks {
     if err := t.Task.Init(t.InitParams...); err != nil {
         return err
@@ -177,7 +177,7 @@ The task package contains all tasks executed by the backend. A task's role is to
 independently. Although there is one example that reuses the result of a previous task. This action could be avoided however by recomputing necessary data.
 
 All tasks implement a common interface whose description can be found below :
-```
+```go
 type Task interface {
 	// Init sets up the task. Think of it as a constructor.
 	Init(...interface{}) error
@@ -214,7 +214,7 @@ It is worth pointing out that, in addition to the double buffering technique, th
 
 ##### Most hit sections
 This task reads the log provided by `fetch logs`, indexes them by sections (using a map) then counts the section occurence and the HTTP request (`GET`, `POST`...) occurences. The result of this task is the following :
-```
+```go
 // The task returns a slice of Hits
 type Hit struct {
 	Section string            // URL section in /compute/create/..., compute is the section
@@ -237,7 +237,7 @@ Implementation-wise I reused the results from `measure rates` task. It introduce
 all the values it needs (the second option being more CPU, RAM and time consumming but can be totally parallelised).
 
 Here is an alert result:
-```
+```go
 type AlertState struct {
 	// IsOn is true when the alert is active.
 	// It is false if there wasn't any alert or the system recovered
@@ -264,7 +264,7 @@ type AlertState struct {
 #### Measure rates
 This task measures all the traffic-related data. It measures them considering a per-frame basis and a global-basis (whole app execution). Before focusing on the
 implementation description, let's describe what data is output:
-```
+```go
 // Rates contains all type of rates and measures taken by the task
 type Rates struct {
 	Global GlobalRates
@@ -310,7 +310,7 @@ This package contains input stream readers. They are used and combined to be abl
 
 This package defines a `Reader` interface. It is then used by all the readers to combine their behaviour using composition. This whole
 package follow the `IOC` principle (`Invertion Of Control`).
-```
+```go
 // Reader is an interface to read data
 type Reader interface {
 	// Open prepares an object for reading
@@ -338,7 +338,7 @@ This reader is not safe when calling Read so attention must be
 paid when calling it (call `Stop` before).
 
 For instance, this is how it's done to have a File reader reading asynchronously (errors are ignored for the sake of simplicity):
-```
+```go
 async := reader.Async{}
 async.Reader = &reader.File{}
 async.Init("/tmp/access.log")
