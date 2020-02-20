@@ -38,8 +38,6 @@ go run cmd/writelog/main.go --lines=20 --duration=1 --path=/tmp/foo.log
 ```
 *Quit the app using* `ESC` or `CTRL C`
 
-### Run with docker
-
 ### Run the tests
 ```bash
 go test ./...

@@ -1,6 +1,6 @@
 module github.com/Juli3nnicolas/http_log_monitor
 
-go 1.12
+go 1.13
 
 require (
 	github.com/mattn/go-runewidth v0.0.8 // indirect
