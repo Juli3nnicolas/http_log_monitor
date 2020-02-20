@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/Juli3nnicolas/http_log_monitor/pkg/log"
+	"github.com/Juli3nnicolas/http_log_monitor/pkg/logger"
 	"github.com/papertrail/go-tail/follower"
 )
 
@@ -71,7 +72,8 @@ func (r *Tail) parseLine(line follower.Line) ([]log.Info, error) {
 
 	parsedLine, err := r.Parse(line.Bytes())
 	if err != nil {
-		return nil, err
+		logger.Get().Warn(err)
+		return nil, nil
 	}
 
 	return []log.Info{parsedLine}, nil

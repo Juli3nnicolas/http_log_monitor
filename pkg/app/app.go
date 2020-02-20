@@ -15,7 +15,7 @@ func Run(conf *Config) error {
 	// Add your tasks to the backend so that it can execute them
 	// HACK : the tasks passed to add are already part of the backend
 	// struct. It is done so because passing certain parameters to Run
-	// and return the task values require  a few abstractions layers
+	// and return the task values require  a few abstraction layers
 	// that I don't have time to code (define dependencies between tasks
 	// a suited view struct and its abstraction layer to convert the tasks
 	// into strongly typed values...)
