@@ -38,6 +38,18 @@ go run cmd/writelog/main.go --lines=20 --duration=1 --path=/tmp/foo.log
 ```
 *Quit the app using* `ESC` or `CTRL C`
 
+### Run with docker
+```bash
+docker build -t logmonitor .
+docker run --name logmonitor logmonitor
+
+# Pass specific flags to customise logmonitor's behaviour (see above section)
+docker exec -it logmonitor bash -c /app/logmonitor
+
+# Exit with CTRL C from the interactive pane then
+docker stop logmonitor
+```
+
 ### Run the tests
 ```bash
 go test ./...

@@ -478,6 +478,15 @@ go run cmd/writelog/main.go --lines=20 --duration=1 --path=/tmp/foo.log
 </div></code></pre>
 <p><em>Quit the app using</em> <code>ESC</code> or <code>CTRL C</code></p>
 <h3 id="run-with-docker">Run with docker</h3>
+<pre class="hljs"><code><div>docker build -t logmonitor .
+docker run --name logmonitor logmonitor
+
+<span class="hljs-comment"># Pass specific flags to customise logmonitor's behaviour (see above section)</span>
+docker <span class="hljs-built_in">exec</span> -it logmonitor bash -c /app/logmonitor
+
+<span class="hljs-comment"># Exit with CTRL C from the interactive pane then</span>
+docker stop logmonitor
+</div></code></pre>
 <h3 id="run-the-tests">Run the tests</h3>
 <pre class="hljs"><code><div>go <span class="hljs-built_in">test</span> ./...
 </div></code></pre>
