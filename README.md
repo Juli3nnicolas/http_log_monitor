@@ -1,7 +1,9 @@
 # HTTP log monitor
 
+*This project has been implemented for a coding interview. If the work interests you, you are free to contribute or fork the project.*
+
 This application monitors incomming http traffic by reading a log file.
-The log file must be formatted with [Common Log Format](https://www.w3.org/Daemon/User/Config/Logging.html).
+The log file must be formatted in [Common Log Format](https://www.w3.org/Daemon/User/Config/Logging.html).
 
 Its default behaviour is the following :
 - reads the log file from `/tmp/access.log`, creates it with unix right `0644` if not found 
